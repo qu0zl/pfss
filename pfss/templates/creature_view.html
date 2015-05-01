@@ -1,0 +1,48 @@
+{% extends "site_base.html" %}
+
+{% block head_title %}"{{creature.name}}"{% endblock %}
+
+{% block body %}
+<STYLE type="text/css">
+    .IB {display:inline-block;}
+    .left {float:left}
+    .right {float:right}
+    .bold {font-weight:bold}
+    h3 {font-size:18px; font-weight:bold}
+ </STYLE>
+<div>
+<div id='header'>
+<div>{{creature.name}}</div>
+<div>{{creature.alignment}} {{creature.size}} {{creature.type}}</div>
+<div>Init {{creature.initiative}}; Senses {{creature.senses}}</div>
+</div>
+<div id='defence'>
+<h3>Defence</h3>
+  <div><b>AC</b> {{creature.AC}}, touch {{creature.touchAC}}, flat-footed {{creature.flatFootedAC}} {{creature.ACcomponents}}</div>
+  <div><b>HP</b> {{creature.HP}} {{creature.HPcomponents}}</div>
+  <div><b>Fort</b> {{creature.Fort}}, <b>Ref</b> {{creature.Ref}}, <b>Will</b> {{creature.Will}}</div>
+  <div><div class='bold IB'>SR </div><div class='IB'>{{creature.SR}}</div></div>
+  </div>
+</div>
+
+<div id='offence'>
+<h3>Offence</h3>
+  <div><b>Speed</b> {{creature.Speed}} ft.</div>
+  {% if creature.melee %}
+    <div><b>Melee</b> {{creature.meleeText}}</div>
+  {% endif %}
+  {% if creature.ranged%}
+    <div><div class='bold left IB'>Ranged</div><div class='IB'>{{creature.ranged}}</div></div>
+  {% endif %}
+  {% if creature.special%}
+    <div><div class='bold left IB'>Special Attack</div><div class='IB'>{{creature.special}}</div></div>
+  {% endif %}
+</div>
+
+<div id='statistics'>
+  <h3>Statistics</h3>
+  <div><b>Str</b> {{creature.Str}}, <b>Dex</b> {{creature.Dex}}, <b>Con</b> {{creature.Con}}, <b>Int</b> {{creature.Int}}, <b>Wis</b> {{creature.Wis}}, <b>Cha</b> {{creature.Cha}}</div>
+</div>
+
+{% endblock %}
+
