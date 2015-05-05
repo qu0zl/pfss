@@ -8,11 +8,13 @@
     .left {float:left}
     .right {float:right}
     .bold {font-weight:bold}
-    h3 {font-size:18px; font-weight:bold}
+    h3 {font-size:18px; font-weight:bold; border-top:1px solid rgb(0,0,0); border-bottom:1px solid rgb(0,0,0); width:450px;}
  </STYLE>
 <div>
 <div id='header'>
-<div>{{creature.name}}</div>
+  <div style="width:450px;">
+      <div style="display:inline;">{{creature.name}}</div>{% if creature.augmented %}<div style="display:inline; float:right">(Augment Summons)</div>{% endif %}
+  </div>
 <div>{{creature.alignment}} {{creature.size}} {{creature.type}}</div>
 <div>Init {{creature.initiative}}; Senses {{creature.senses}}</div>
 </div>
@@ -42,7 +44,16 @@
 <div id='statistics'>
   <h3>Statistics</h3>
   <div><b>Str</b> {{creature.Str}}, <b>Dex</b> {{creature.Dex}}, <b>Con</b> {{creature.Con}}, <b>Int</b> {{creature.Int}}, <b>Wis</b> {{creature.Wis}}, <b>Cha</b> {{creature.Cha}}</div>
+  <div><b>Base Atk</b> {{creature.BAB}}, <b>CMB</b> {{creature.CMB}}, <b>CMD</b> {{creature.CMD}}</div>
 </div>
-
+{% if creature.base.Special %}
+<div id='special'>
+    <h3>Special Abilities</h3>
+    {% for item in creature.specials %}
+      {{item}}
+    {% endfor %}
+</div>
+{% endif %}
+ 
 {% endblock %}
 
