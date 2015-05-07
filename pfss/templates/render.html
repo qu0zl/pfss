@@ -1,0 +1,17 @@
+{% extends "site_base.html" %}
+
+{% block head_title %}"{{creature.name}}"{% endblock %}
+
+{% block body %}
+<STYLE type="text/css">
+    .IB {display:inline-block;}
+    .left {float:left}
+    .right {float:right}
+    .bold {font-weight:bold}
+    h3 {font-size:18px; font-weight:bold; border-top:1px solid rgb(0,0,0); border-bottom:1px solid rgb(0,0,0);}
+</STYLE>
+{% for creature in creatures %}
+{% include 'creature.html' with creature=creature %}
+{% endfor %}
+{% endblock %}
+
