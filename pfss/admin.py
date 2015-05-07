@@ -1,7 +1,10 @@
 
 from django.contrib import admin
-from pfss.models import SpecialAbility, Size, Die, Creature, Attack
+from pfss.models import SpecialAbility, Size, Die, Creature, Attack, Skill, CreatureSkill, CreatureType
 
+admin.site.register(CreatureType)
+admin.site.register(CreatureSkill)
+admin.site.register(Skill)
 admin.site.register(Attack)
 admin.site.register(SpecialAbility)
 admin.site.register(Die)

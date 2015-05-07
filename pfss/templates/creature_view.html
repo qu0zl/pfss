@@ -8,11 +8,11 @@
     .left {float:left}
     .right {float:right}
     .bold {font-weight:bold}
-    h3 {font-size:18px; font-weight:bold; border-top:1px solid rgb(0,0,0); border-bottom:1px solid rgb(0,0,0); width:450px;}
+    h3 {font-size:18px; font-weight:bold; border-top:1px solid rgb(0,0,0); border-bottom:1px solid rgb(0,0,0);}
  </STYLE>
-<div>
+<div style="width:450px;">
 <div id='header'>
-  <div style="width:450px;">
+    <div>
       <div style="display:inline;">{{creature.name}}</div>{% if creature.augmented %}<div style="display:inline; float:right">(Augment Summons)</div>{% endif %}
   </div>
 <div>{{creature.alignment}} {{creature.size}} {{creature.type}}</div>
@@ -23,8 +23,7 @@
   <div><b>AC</b> {{creature.AC}}, touch {{creature.touchAC}}, flat-footed {{creature.flatFootedAC}} {{creature.ACcomponents}}</div>
   <div><b>HP</b> {{creature.HP}} {{creature.HPcomponents}}</div>
   <div><b>Fort</b> {{creature.Fort}}, <b>Ref</b> {{creature.Ref}}, <b>Will</b> {{creature.Will}}</div>
-  <div><div class='bold IB'>SR </div><div class='IB'>{{creature.SR}}</div></div>
-  </div>
+  <div><b>SR</b> {{creature.SR}}</div>
 </div>
 
 <div id='offence'>
@@ -46,6 +45,13 @@
   <div><b>Str</b> {{creature.Str}}, <b>Dex</b> {{creature.Dex}}, <b>Con</b> {{creature.Con}}, <b>Int</b> {{creature.Int}}, <b>Wis</b> {{creature.Wis}}, <b>Cha</b> {{creature.Cha}}</div>
   <div><b>Base Atk</b> {{creature.BAB}}, <b>CMB</b> {{creature.CMB}}, <b>CMD</b> {{creature.CMD}}</div>
 </div>
+{% for item in creature.Skills %}
+{% if forloop.first %}<div><b>Skills </b> {% endif %}
+  {% if not forloop.first %}, {% endif %}
+  {{ item }}
+{% if forloop.last %}</div>{%endif%}
+
+{% endfor %}
 {% if creature.base.Special %}
 <div id='special'>
     <h3>Special Abilities</h3>
@@ -54,6 +60,7 @@
     {% endfor %}
 </div>
 {% endif %}
+</div>
  
 {% endblock %}
 

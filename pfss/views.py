@@ -2,6 +2,7 @@ from django.contrib.auth.models import User
 from django.shortcuts import render_to_response, redirect, render
 from django.template import RequestContext
 from django.forms.models import modelformset_factory
+from pfss.models import formatNumber
 import pfss.models
 
 # Used to create an instance of a base creature and apply dynamic affects like
@@ -11,13 +12,14 @@ class creatureInstance(object):
     def __init__(self, base, augmentSummons=False):
         self.base = base
         self.augmented = augmentSummons
-        for item in ("name","HD","Dex","Int","Wis","Cha","BAB","Speed","Size","armourAC","naturalAC"):
+        for item in ("name","HD","Dex","Int","Wis","Cha","BAB","Speed","Size","SR"):
             try:
                 setattr(self, item, base.__dict__[item])
             except Exception as e:
                 print e
         self.Str = base.Str + 4 if augmentSummons else base.Str
         self.Con = base.Con + 4 if augmentSummons else base.Con
+        self.BAB = base.BAB
     @property
     def specials(self):
         specialsReturn = []
@@ -25,12 +27,19 @@ class creatureInstance(object):
             specialsReturn.append(item.render(self))
         return specialsReturn
     @property
+    def Skills(self):
+        skillsReturn = []
+        for item in self.base.creatureskill_set.all():
+            skillsReturn.append(item.render(self))
+        return skillsReturn
+
+    @property
     def CMB(self):
         if (self.base.Size.ACbonus>=2): # Tiny or smaller
             statMod = self.DexMod
         else:
             statMod = self.StrMod
-        return int(self.BAB+statMod-self.base.Size.ACbonus)
+        return formatNumber((self.BAB+statMod-self.base.Size.ACbonus))
     @property
     def CMD(self):
         return int(10+self.BAB+self.StrMod+self.DexMod-self.base.Size.ACbonus) # TODO misc modifiers like 4 legs vs trip
@@ -39,22 +48,22 @@ class creatureInstance(object):
         return int(((self.base.HDtype.half)+self.ConMod)*self.HD)
     @property
     def AC(self):
-        return 10+self.DexMod+self.armourAC+self.Size.ACbonus+self.naturalAC+self.dodgeAC
+        return 10+self.DexMod+self.base.armourAC+self.base.Size.ACbonus+self.base.naturalAC+self.base.dodgeAC
     @property
     def touchAC(self):
-        return 10+self.DexMod+self.Size.ACbonus+self.dodgeAC
+        return 10+self.DexMod+self.base.Size.ACbonus+self.base.dodgeAC
     @property
     def flatFootedAC(self):
-        return 10+self.Size.ACbonus+self.naturalAC+self.armourAC
+        return 10+self.base.Size.ACbonus+self.base.naturalAC+self.base.armourAC
     @property
     def ACcomponents(self):
-        if self.armourAC or self.DexMod or self.naturalAC or self.dodgeAC or self.Size.ACbonus:
+        if self.base.armourAC or self.DexMod or self.base.naturalAC or self.base.dodgeAC or self.base.Size.ACbonus:
             return "(%s%s%s%s%s)" % ( \
-                ("%s Arm " % self.armourAC) if self.armourAC else "", \
+                ("%s Arm " % self.base.armourAC) if self.base.armourAC else "", \
                 ("%s Dex " % self.DexMod) if self.DexMod else "", \
-                ("%s Nat " % self.naturalAC) if self.naturalAC else "", \
-                ("%s Dge " % self.dodgeAC) if self.dodgeAC else "", \
-                ("%s Sze " % self.Size.ACbonus) if self.Size.ACbonus else ""
+                ("%s Nat " % self.base.naturalAC) if self.base.naturalAC else "", \
+                ("%s Dge " % self.base.dodgeAC) if self.base.dodgeAC else "", \
+                ("%s Sze " % self.base.Size.ACbonus) if self.base.Size.ACbonus else ""
                 )
         else:
             return ''
@@ -99,13 +108,13 @@ class creatureInstance(object):
         return self.DexMod
     @property
     def Will(self):
-        return "%s%s" % ("+" if self.WisMod >= 0 else "", self.WisMod)
+        return formatNumber(self.WisMod+self.base.baseWillSave)
     @property
     def Ref(self):
-        return "%s%s" % ("+" if self.DexMod >= 0 else "", self.DexMod)
+        return formatNumber(self.DexMod+self.base.baseRefSave)
     @property
     def Fort(self):
-        return "%s%s" % ("+" if self.ConMod >= 0 else "", self.ConMod)
+        return formatNumber(self.ConMod+self.base.baseFortSave)
     def ChaText(self,ifPositive=False):
         charisma = self.ChaMod
         if (ifPositive and charisma < 0):

@@ -11,6 +11,19 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
+            name='Attack',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('name', models.CharField(max_length=64)),
+                ('dCount', models.IntegerField(default=1)),
+                ('attackType', models.IntegerField(default=0, choices=[(0, b'Melee'), (1, b'Ranged'), (2, b'SPECIAL')])),
+                ('attackClass', models.IntegerField(default=0, choices=[(0, b'Primary'), (1, b'Secondary'), (2, b'Light'), (3, b'One Handed'), (b'TWO_HANDED', b'Two Handed')])),
+            ],
+            options={
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
             name='Creature',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
@@ -22,7 +35,38 @@ class Migration(migrations.Migration):
                 ('Wis', models.IntegerField()),
                 ('Cha', models.IntegerField()),
                 ('BAB', models.IntegerField()),
-                ('HD', models.IntegerField()),
+                ('Speed', models.IntegerField(default=30, choices=[(5, b'5'), (10, b'10'), (15, b'15'), (20, b'20'), (25, b'25'), (30, b'30'), (35, b'35'), (40, b'40'), (45, b'45'), (50, b'50'), (55, b'55'), (60, b'60'), (65, b'65'), (70, b'70'), (75, b'75'), (80, b'80'), (85, b'85'), (90, b'90'), (95, b'95'), (100, b'100'), (105, b'105'), (110, b'110'), (115, b'115'), (120, b'120'), (125, b'125'), (130, b'130'), (135, b'135'), (140, b'140'), (145, b'145'), (150, b'150'), (155, b'155'), (160, b'160'), (165, b'165'), (170, b'170'), (175, b'175'), (180, b'180'), (185, b'185'), (190, b'190'), (195, b'195'), (200, b'200'), (205, b'205'), (210, b'210'), (215, b'215'), (220, b'220'), (225, b'225'), (230, b'230'), (235, b'235'), (240, b'240'), (245, b'245'), (250, b'250'), (255, b'255'), (260, b'260'), (265, b'265'), (270, b'270'), (275, b'275'), (280, b'280'), (285, b'285'), (290, b'290'), (295, b'295')])),
+                ('HD', models.IntegerField(verbose_name=b'Hit-Dice')),
+                ('armourAC', models.IntegerField(default=0, verbose_name=b'Armour Bonus')),
+                ('naturalAC', models.IntegerField(default=0, verbose_name=b'Natural AC Bonus')),
+                ('dodgeAC', models.IntegerField(default=0, verbose_name=b'Dodge AC Bonus')),
+                ('Attacks', models.ManyToManyField(to='pfss.Attack')),
+            ],
+            options={
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='CreatureSkill',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('extraText', models.TextField(null=True, blank=True)),
+                ('extraModifier', models.IntegerField(default=0)),
+                ('total', models.IntegerField(default=0)),
+                ('creature', models.ForeignKey(to='pfss.Creature')),
+            ],
+            options={
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='CreatureType',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('name', models.CharField(max_length=128)),
+                ('GoodSave1', models.IntegerField(default=None, null=True, choices=[(1, b'Fortitude'), (2, b'Reflex'), (3, b'Will')])),
+                ('GoodSave2', models.IntegerField(default=None, null=True, choices=[(1, b'Fortitude'), (2, b'Reflex'), (3, b'Will')])),
+                ('GoodSave3', models.IntegerField(default=None, null=True, choices=[(1, b'Fortitude'), (2, b'Reflex'), (3, b'Will')])),
             ],
             options={
             },
@@ -38,9 +82,80 @@ class Migration(migrations.Migration):
             },
             bases=(models.Model,),
         ),
+        migrations.CreateModel(
+            name='Size',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('name', models.CharField(max_length=64)),
+                ('ACbonus', models.IntegerField()),
+                ('reach', models.IntegerField()),
+            ],
+            options={
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='Skill',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('name', models.CharField(max_length=128)),
+                ('stat', models.IntegerField(choices=[(1, b'Strength'), (2, b'Dexterity'), (3, b'Constitution'), (4, b'Intelligence'), (5, b'Wisdom'), (6, b'Charisma')])),
+            ],
+            options={
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='SpecialAbility',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('name', models.CharField(max_length=128)),
+                ('dynamicText', models.BooleanField(default=False)),
+                ('text', models.TextField()),
+            ],
+            options={
+            },
+            bases=(models.Model,),
+        ),
+        migrations.AddField(
+            model_name='creatureskill',
+            name='skill',
+            field=models.ForeignKey(to='pfss.Skill'),
+            preserve_default=True,
+        ),
         migrations.AddField(
             model_name='creature',
             name='HDtype',
+            field=models.ForeignKey(default=None, to='pfss.Die'),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='creature',
+            name='Size',
+            field=models.ForeignKey(default=None, to='pfss.Size'),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='creature',
+            name='Skills',
+            field=models.ManyToManyField(default=None, to='pfss.Skill', through='pfss.CreatureSkill', blank=True),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='creature',
+            name='Special',
+            field=models.ManyToManyField(default=None, to='pfss.SpecialAbility'),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='creature',
+            name='Type',
+            field=models.ForeignKey(default=None, to='pfss.CreatureType', null=True),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='attack',
+            name='dType',
             field=models.ForeignKey(default=None, to='pfss.Die'),
             preserve_default=True,
         ),

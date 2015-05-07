@@ -7,19 +7,13 @@ from django.db import models, migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('pfss', '0002_auto_20150501_1411'),
+        ('pfss', '0003_creaturetype_bab_progression'),
     ]
 
     operations = [
         migrations.AddField(
             model_name='creature',
-            name='dodgeAC',
-            field=models.IntegerField(default=0),
-            preserve_default=True,
-        ),
-        migrations.AddField(
-            model_name='creature',
-            name='naturalAC',
+            name='SR',
             field=models.IntegerField(default=0),
             preserve_default=True,
         ),
