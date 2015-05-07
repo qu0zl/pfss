@@ -24,7 +24,7 @@ class creatureInstance(object):
     def specials(self):
         specialsReturn = []
         for item in self.base.Special.all():
-            specialsReturn.append(item.render(self))
+            specialsReturn.append({'name':item.name, 'text':item.render(self)})
         return specialsReturn
     @property
     def Skills(self):
@@ -32,7 +32,12 @@ class creatureInstance(object):
         for item in self.base.creatureskill_set.all():
             skillsReturn.append(item.render(self))
         return skillsReturn
-
+    @property
+    def perception(self):
+        for item in self.Skills:
+            if item.startswith('Perception'):
+                return item
+        return None
     @property
     def CMB(self):
         if (self.base.Size.ACbonus>=2): # Tiny or smaller
@@ -109,7 +114,7 @@ class creatureInstance(object):
         return "(%s%s%s%s)" % (self.HD,self.base.HDtype,"+" if self.ConMod >= 0 else "", self.ConMod*self.HD)
     @property
     def initiative(self):
-        return self.DexMod
+        return self.DexMod + 4 if self.base.Feats.filter(name='Improved Initiative').count() else self.DexMod
     @property
     def Will(self):
         return formatNumber(self.WisMod+self.base.baseWillSave)

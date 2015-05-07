@@ -4,7 +4,7 @@
       <div style="display:inline;">{{creature.name}}</div>{% if creature.augmented %}<div style="display:inline; float:right">(Augment Summons)</div>{% endif %}
   </div>
 <div>{{creature.alignment}} {{creature.base.Size}} {{creature.base.Type}}</div>
-<div><b>Init</b> {{creature.initiative}}; <b>Senses</b> {{creature.senses}}</div>
+<div><b>Init</b> {{creature.initiative}}; <b>Senses</b> {{creature.senses}} {{creature.perception}}</div>
 </div>
 <div id='defence'>
 <h3>Defence</h3>
@@ -26,7 +26,11 @@
     <div><div class='bold left IB'>Ranged</div><div class='IB'>{{creature.ranged}}</div></div>
   {% endif %}
   {% if creature.special%}
-    <div><div class='bold left IB'>Special Attack</div><div class='IB'>{{creature.special}}</div></div>
+  <div>
+      <div class='bold left IB'>Special Attack</div>
+    {% for special in creature.special %}    
+    <div class='IB'>{{special}}</div></div>
+    {% endfor %}
   {% endif %}
 </div>
 
@@ -38,7 +42,6 @@
   <div><b>Feats </b>
       {% for feat in creature.base.Feats.all %}
       {% if not forloop.first %}, {% endif %}
-
         {{feat}}
       {% endfor %}
   </div>
@@ -51,11 +54,23 @@
 {% if forloop.last %}</div>{%endif%}
 
 {% endfor %}
+{% if creature.base.Languages %}
+<div>
+<b>Languages</b>
+{% for language in creature.base.Languages.all %}
+  {% if not forloop.first %}, {% endif %}
+  {{language}}
+{% endfor %}
+</div>
+{% endif %}
 {% if creature.base.Special %}
 <div id='special'>
     <h3>Special Abilities</h3>
     {% for item in creature.specials %}
-      {{item}}
+    <div>
+          <b>{{item.name}}</b>
+          {{item.text}}
+      </div>
     {% endfor %}
 </div>
 {% endif %}

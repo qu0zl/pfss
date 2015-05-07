@@ -73,6 +73,11 @@ class CreatureType(models.Model):
     def __unicode__(self):
         return self.name
 
+class Language(models.Model):
+    name = models.CharField(max_length=64)
+    def __unicode__(self):
+        return self.name
+
 class Skill(models.Model):
     name = models.CharField(max_length=128)
     stat = models.IntegerField(choices=STATS)
@@ -166,6 +171,7 @@ class Creature(models.Model):
     Speed = models.IntegerField(choices=map( lambda x: (x,str(x)), range(5,300,5)), default=30)
     HDtype = models.ForeignKey('Die', default=None)
     Attacks = models.ManyToManyField('Attack', blank=True, null=True)
+    Languages = models.ManyToManyField('Language', blank=True, null=True)
     Feats = models.ManyToManyField('Feat', blank=True, null=True)
     Size = models.ForeignKey('Size', default=None)
     Type = models.ForeignKey('CreatureType', default=None, null=True)
