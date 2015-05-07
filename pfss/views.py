@@ -60,10 +60,10 @@ class creatureInstance(object):
         if self.base.armourAC or self.DexMod or self.base.naturalAC or self.base.dodgeAC or self.base.Size.ACbonus:
             return "(%s%s%s%s%s)" % ( \
                 ("%s Arm " % self.base.armourAC) if self.base.armourAC else "", \
-                ("%s Dex " % self.DexMod) if self.DexMod else "", \
-                ("%s Nat " % self.base.naturalAC) if self.base.naturalAC else "", \
-                ("%s Dge " % self.base.dodgeAC) if self.base.dodgeAC else "", \
-                ("%s Sze " % self.base.Size.ACbonus) if self.base.Size.ACbonus else ""
+                ("%s Dex " % formatNumber(self.DexMod)) if self.DexMod else "", \
+                ("%s Nat " % formatNumber(self.base.naturalAC)) if self.base.naturalAC else "", \
+                ("%s Dge " % formatNumber(self.base.dodgeAC)) if self.base.dodgeAC else "", \
+                ("%s Sze " % formatNumber(self.base.Size.ACbonus)) if self.base.Size.ACbonus else ""
                 )
         else:
             return ''
@@ -72,7 +72,11 @@ class creatureInstance(object):
         return self.base.Attacks.filter(attackType=pfss.models.MELEE)
     @property
     def meleeBonus(self):
-        return self.BAB+self.StrMod
+        mod = self.StrMod
+        if self.base.Feats.filter(name='Weapon Finesse').count():
+            if self.DexMod > mod:
+                mod = self.DexMod
+        return self.BAB+mod
     def toHit(self,item):
         # TODO need to add weapon finesse feat support
         if item.attackType == pfss.models.MELEE:
@@ -148,7 +152,28 @@ class creatureInstance(object):
             return 'Not yet implemented'
 
 
+def creatureList(request):
+    creatures = pfss.models.Creature.objects.all()
+    return render_to_response('list.html', \
+        {
+            'creatures':creatures,
+        }, \
+        RequestContext(request))
 
+def handleList(request):
+    creatures = []
+    for key in request.POST:
+        if key.startswith('creature_'):
+            if key.startswith('creature_augment_'):
+                creature=creatureInstance(pfss.models.Creature.objects.get(id=int(key.split('_')[-1])), True)
+            else:
+                creature=creatureInstance(pfss.models.Creature.objects.get(id=int(key.split('_')[-1])))
+            creatures.append(creature)
+    return render_to_response('render.html', \
+            {
+                'creatures':creatures,
+            }, \
+            RequestContext(request))
 
 def creatureView(request, cid):
 

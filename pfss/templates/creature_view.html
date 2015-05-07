@@ -9,58 +9,8 @@
     .right {float:right}
     .bold {font-weight:bold}
     h3 {font-size:18px; font-weight:bold; border-top:1px solid rgb(0,0,0); border-bottom:1px solid rgb(0,0,0);}
- </STYLE>
-<div style="width:450px;">
-<div id='header'>
-    <div>
-      <div style="display:inline;">{{creature.name}}</div>{% if creature.augmented %}<div style="display:inline; float:right">(Augment Summons)</div>{% endif %}
-  </div>
-<div>{{creature.alignment}} {{creature.size}} {{creature.type}}</div>
-<div>Init {{creature.initiative}}; Senses {{creature.senses}}</div>
-</div>
-<div id='defence'>
-<h3>Defence</h3>
-  <div><b>AC</b> {{creature.AC}}, touch {{creature.touchAC}}, flat-footed {{creature.flatFootedAC}} {{creature.ACcomponents}}</div>
-  <div><b>HP</b> {{creature.HP}} {{creature.HPcomponents}}</div>
-  <div><b>Fort</b> {{creature.Fort}}, <b>Ref</b> {{creature.Ref}}, <b>Will</b> {{creature.Will}}</div>
-  <div><b>SR</b> {{creature.SR}}</div>
-</div>
-
-<div id='offence'>
-<h3>Offence</h3>
-  <div><b>Speed</b> {{creature.Speed}} ft.</div>
-  {% if creature.melee %}
-    <div><b>Melee</b> {{creature.meleeText}}</div>
-  {% endif %}
-  {% if creature.ranged%}
-    <div><div class='bold left IB'>Ranged</div><div class='IB'>{{creature.ranged}}</div></div>
-  {% endif %}
-  {% if creature.special%}
-    <div><div class='bold left IB'>Special Attack</div><div class='IB'>{{creature.special}}</div></div>
-  {% endif %}
-</div>
-
-<div id='statistics'>
-  <h3>Statistics</h3>
-  <div><b>Str</b> {{creature.Str}}, <b>Dex</b> {{creature.Dex}}, <b>Con</b> {{creature.Con}}, <b>Int</b> {{creature.Int}}, <b>Wis</b> {{creature.Wis}}, <b>Cha</b> {{creature.Cha}}</div>
-  <div><b>Base Atk</b> {{creature.BAB}}, <b>CMB</b> {{creature.CMB}}, <b>CMD</b> {{creature.CMD}}</div>
-</div>
-{% for item in creature.Skills %}
-{% if forloop.first %}<div><b>Skills </b> {% endif %}
-  {% if not forloop.first %}, {% endif %}
-  {{ item }}
-{% if forloop.last %}</div>{%endif%}
-
-{% endfor %}
-{% if creature.base.Special %}
-<div id='special'>
-    <h3>Special Abilities</h3>
-    {% for item in creature.specials %}
-      {{item}}
-    {% endfor %}
-</div>
-{% endif %}
-</div>
+</STYLE>
+{% include 'creature.html' %}
  
 {% endblock %}
 
