@@ -74,7 +74,7 @@ class creatureInstance(object):
             return ''
     @property
     def melee(self):
-        return self.base.Attacks.filter(attackType=pfss.models.MELEE)
+        return self.base.creatureattack_set.filter(attack__attackType=pfss.models.MELEE)
     @property
     def meleeBonus(self):
         mod = self.StrMod
@@ -94,21 +94,24 @@ class creatureInstance(object):
         first = True
         output=""
         for item in self.melee:
-            if item.attackClass==pfss.models.TWO_HANDED or (self.melee.count()==1 and item.attackClass==pfss.models.PRIMARY):
+            attack = item.attack
+            # greg should it check if only melee attack or if only PRIMARY, ie can I have some secondaries and still
+            # get 1.5x damage?
+            if attack.attackClass==pfss.models.TWO_HANDED or (self.melee.count()==1 and attack.attackClass==pfss.models.PRIMARY):
                 twoHandDmg=True
             else:
                 twoHandDmg=False
             extraDmg = int(self.StrMod * (1 if twoHandDmg==False else 1.5))
-            output = "%s%s%s %s %s%s%s" % (output,", " if not first else "",item.name, self.toHit(item), item.dmg, "+" if extraDmg>=0 else "", extraDmg)
+            output = "%s%s%s%s %s (%s%s%s)" % (output,", " if not first else "", "%s x " % item.count if item.count > 1 else "", attack.name, self.toHit(attack), attack.dmg, formatNumber(extraDmg, noZero=True), " %s" % item.extraText if item.extraText else '')
             first=False
         return output
 
     @property
     def ranged(self):
-        return self.base.Attacks.filter(attackType=pfss.models.RANGED)
+        return self.base.creatureattack_set.filter(attack__attackType=pfss.models.RANGED)
     @property
     def special(self):
-        return self.base.Attacks.filter(attackType=pfss.models.SPECIAL)
+        return self.base.creatureattack_set.filter(attack__attackType=pfss.models.SPECIAL)
     @property
     def HPcomponents(self):
         return "(%s%s%s%s)" % (self.HD,self.base.HDtype,"+" if self.ConMod >= 0 else "", self.ConMod*self.HD)

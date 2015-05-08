@@ -3,15 +3,6 @@
 {% block head_title %}"Choose Creatures"{% endblock %}
 
 {% block body %}
-<STYLE type="text/css">
-    .IB {display:inline-block;}
-    .left {float:left}
-    .right {float:right}
-    .bold {font-weight:bold}
-    .pad {padding:5px;}
-    h3 {font-size:18px; font-weight:bold; border-top:1px solid rgb(0,0,0); border-bottom:1px solid rgb(0,0,0);}
-</STYLE>
-
 <form method="post" id="creature_list" action="/list/handle/"> {% csrf_token %}
 {% for creature in creatures %}
 <div class ="IB" style="width: 600px;">

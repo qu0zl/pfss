@@ -37,7 +37,9 @@ SLOW_BAB={1:0, 2:1, 3:1, 4:2, 5:2, 6:3, 7:3, 8:4, 9:4, 10:5, 11:5, 12:6, 13:6, 1
 SAVES = ((FORT, 'Fortitude'), (REF, 'Reflex'), (WILL,'Will'))
 STATS=((STR, 'Strength'), (DEX, 'Dexterity'), (CON, 'Constitution'), (INT,'Intelligence'), (WIS,'Wisdom'),(CHA,'Charisma'))
 
-def formatNumber(number):
+def formatNumber(number, noZero=False):
+    if noZero and number == 0:
+        return ''
     if ( number >= 0 ):
         return "+%s" % number
     else:
@@ -83,6 +85,16 @@ class Skill(models.Model):
     stat = models.IntegerField(choices=STATS)
     def __unicode__(self):
         return self.name
+
+class CreatureAttack(models.Model):
+    attack = models.ForeignKey('Attack')
+    creature = models.ForeignKey('Creature')
+    extraText = models.TextField(null=True, blank=True)
+    count = models.IntegerField(default=1)
+    def __unicode__(self):
+        if self.count > 1:
+            return "%s x %s" % (self.count, self.attack.__unicode__())
+        return self.attack.__unicode__()
 
 class CreatureSkill(models.Model):
     extraText = models.TextField(null=True, blank=True)
@@ -168,9 +180,10 @@ class Creature(models.Model):
     Wis = models.IntegerField()
     Cha = models.IntegerField()
     SR = models.IntegerField(default=0)
-    Speed = models.IntegerField(choices=map( lambda x: (x,str(x)), range(5,300,5)), default=30)
+    #Speed = models.IntegerField(choices=map( lambda x: (x,str(x)), range(5,300,5)), default=30)
+    Speed = models.CharField(max_length=256, blank=True)
     HDtype = models.ForeignKey('Die', default=None)
-    Attacks = models.ManyToManyField('Attack', blank=True, null=True)
+    Attacks = models.ManyToManyField('Attack', blank=True, null=True, through='CreatureAttack')
     Languages = models.ManyToManyField('Language', blank=True, null=True)
     Feats = models.ManyToManyField('Feat', blank=True, null=True)
     Size = models.ForeignKey('Size', default=None)
@@ -181,10 +194,11 @@ class Creature(models.Model):
     naturalAC = models.IntegerField(verbose_name='Natural AC Bonus', default=0)
     dodgeAC = models.IntegerField(verbose_name='Dodge AC Bonus', default=0)
     Skills = models.ManyToManyField('Skill', default=None, through='CreatureSkill', blank=True)
+    Senses = models.CharField(max_length=256, blank=True)
 
     @property
     def BAB(self):
-        return self.Type.BAB(self.HD)
+        return self.Type.BAB(self.HD) + self.Size.ACbonus
     @property
     def baseWillSave(self):
         return self.baseSave(WILL)

@@ -1,0 +1,6 @@
+.IB {display:inline-block;}
+.left {float:left}
+.right {float:right}
+.bold {font-weight:bold}
+.pad {padding:5px;}
+h3 {font-size:18px; font-weight:bold; border-top:1px solid rgb(0,0,0); border-bottom:1px solid rgb(0,0,0);}

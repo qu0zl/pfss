@@ -34,13 +34,26 @@ class Migration(migrations.Migration):
                 ('Int', models.IntegerField()),
                 ('Wis', models.IntegerField()),
                 ('Cha', models.IntegerField()),
-                ('BAB', models.IntegerField()),
-                ('Speed', models.IntegerField(default=30, choices=[(5, b'5'), (10, b'10'), (15, b'15'), (20, b'20'), (25, b'25'), (30, b'30'), (35, b'35'), (40, b'40'), (45, b'45'), (50, b'50'), (55, b'55'), (60, b'60'), (65, b'65'), (70, b'70'), (75, b'75'), (80, b'80'), (85, b'85'), (90, b'90'), (95, b'95'), (100, b'100'), (105, b'105'), (110, b'110'), (115, b'115'), (120, b'120'), (125, b'125'), (130, b'130'), (135, b'135'), (140, b'140'), (145, b'145'), (150, b'150'), (155, b'155'), (160, b'160'), (165, b'165'), (170, b'170'), (175, b'175'), (180, b'180'), (185, b'185'), (190, b'190'), (195, b'195'), (200, b'200'), (205, b'205'), (210, b'210'), (215, b'215'), (220, b'220'), (225, b'225'), (230, b'230'), (235, b'235'), (240, b'240'), (245, b'245'), (250, b'250'), (255, b'255'), (260, b'260'), (265, b'265'), (270, b'270'), (275, b'275'), (280, b'280'), (285, b'285'), (290, b'290'), (295, b'295')])),
-                ('HD', models.IntegerField(verbose_name=b'Hit-Dice')),
+                ('SR', models.IntegerField(default=0)),
+                ('Speed', models.CharField(max_length=256, blank=True)),
+                ('HD', models.IntegerField(null=True, verbose_name=b'Hit-Dice')),
                 ('armourAC', models.IntegerField(default=0, verbose_name=b'Armour Bonus')),
                 ('naturalAC', models.IntegerField(default=0, verbose_name=b'Natural AC Bonus')),
                 ('dodgeAC', models.IntegerField(default=0, verbose_name=b'Dodge AC Bonus')),
-                ('Attacks', models.ManyToManyField(to='pfss.Attack')),
+                ('Senses', models.CharField(max_length=256, blank=True)),
+            ],
+            options={
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='CreatureAttack',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('extraText', models.TextField(null=True, blank=True)),
+                ('count', models.IntegerField(default=1)),
+                ('attack', models.ForeignKey(to='pfss.Attack')),
+                ('creature', models.ForeignKey(to='pfss.Creature')),
             ],
             options={
             },
@@ -64,9 +77,10 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('name', models.CharField(max_length=128)),
-                ('GoodSave1', models.IntegerField(default=None, null=True, choices=[(1, b'Fortitude'), (2, b'Reflex'), (3, b'Will')])),
-                ('GoodSave2', models.IntegerField(default=None, null=True, choices=[(1, b'Fortitude'), (2, b'Reflex'), (3, b'Will')])),
-                ('GoodSave3', models.IntegerField(default=None, null=True, choices=[(1, b'Fortitude'), (2, b'Reflex'), (3, b'Will')])),
+                ('BAB_Progression', models.IntegerField(default=2, choices=[(1, b'Slow'), (2, b'Medium'), (3, b'Fast')])),
+                ('GoodSave1', models.IntegerField(default=None, null=True, blank=True, choices=[(None, b'None'), (1, b'Fortitude'), (2, b'Reflex'), (3, b'Will')])),
+                ('GoodSave2', models.IntegerField(default=None, null=True, blank=True, choices=[(None, b'None'), (1, b'Fortitude'), (2, b'Reflex'), (3, b'Will')])),
+                ('GoodSave3', models.IntegerField(default=None, null=True, blank=True, choices=[(None, b'None'), (1, b'Fortitude'), (2, b'Reflex'), (3, b'Will')])),
             ],
             options={
             },
@@ -77,6 +91,26 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('size', models.IntegerField()),
+            ],
+            options={
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='Feat',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('name', models.CharField(max_length=128)),
+            ],
+            options={
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='Language',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('name', models.CharField(max_length=64)),
             ],
             options={
             },
@@ -125,8 +159,26 @@ class Migration(migrations.Migration):
         ),
         migrations.AddField(
             model_name='creature',
+            name='Attacks',
+            field=models.ManyToManyField(to='pfss.Attack', null=True, through='pfss.CreatureAttack', blank=True),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='creature',
+            name='Feats',
+            field=models.ManyToManyField(to='pfss.Feat', null=True, blank=True),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='creature',
             name='HDtype',
             field=models.ForeignKey(default=None, to='pfss.Die'),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='creature',
+            name='Languages',
+            field=models.ManyToManyField(to='pfss.Language', null=True, blank=True),
             preserve_default=True,
         ),
         migrations.AddField(
@@ -144,7 +196,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='creature',
             name='Special',
-            field=models.ManyToManyField(default=None, to='pfss.SpecialAbility'),
+            field=models.ManyToManyField(default=None, to='pfss.SpecialAbility', null=True, blank=True),
             preserve_default=True,
         ),
         migrations.AddField(

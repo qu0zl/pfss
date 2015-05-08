@@ -1,10 +1,10 @@
-<div style="display:inline-block; border-style:solid; border-width:1px; padding:3px; margin:3px; width:340px;">
+<div style=" font-size:0.875em; display:inline-block; border-style:solid; border-width:1px; padding:3px; margin:3px; width:45%;">
 <div id='header'>
     <div>
-      <div style="display:inline;">{{creature.name}}</div>{% if creature.augmented %}<div style="display:inline; float:right">(Augment Summons)</div>{% endif %}
+        <div class="IB"><b>{{creature.name}}</b></div>{% if creature.augmented %}<div class="IB right">(Augment Summons)</div>{% endif %}
   </div>
 <div>{{creature.alignment}} {{creature.base.Size}} {{creature.base.Type}}</div>
-<div><b>Init</b> {{creature.initiative}}; <b>Senses</b> {{creature.senses}} {{creature.perception}}</div>
+<div><b>Init</b> {{creature.initiative}}; <b>Senses</b> {{creature.base.Senses}}; {{creature.perception}}</div>
 </div>
 <div id='defence'>
 <h3>Defence</h3>
@@ -18,7 +18,7 @@
 
 <div id='offence'>
 <h3>Offence</h3>
-  <div><b>Speed</b> {{creature.Speed}} ft.</div>
+  <div><b>Speed</b> {{creature.Speed}}</div>
   {% if creature.melee %}
     <div><b>Melee</b> {{creature.meleeText}}</div>
   {% endif %}
@@ -54,7 +54,7 @@
 {% if forloop.last %}</div>{%endif%}
 
 {% endfor %}
-{% if creature.base.Languages %}
+{% if creature.base.Languages.count %}
 <div>
 <b>Languages</b>
 {% for language in creature.base.Languages.all %}
