@@ -74,6 +74,8 @@ class CreatureGroup(models.Model):
         return self.name
 
 class CreatureType(models.Model):
+    class Meta:
+        ordering = ['name']
     name = models.CharField(max_length=128)
     BAB_Progression = models.IntegerField(default=2, choices=((1,'Slow'),(2,'Medium'),(3,'Fast')))
     GoodSave1 = models.IntegerField(default=None, choices=((None,'None'),)+SAVES, null=True, blank=True)
@@ -90,17 +92,23 @@ class CreatureType(models.Model):
         return self.name
 
 class Language(models.Model):
+    class Meta:
+        ordering = ['name']
     name = models.CharField(max_length=64)
     def __unicode__(self):
         return self.name
 
 class Skill(models.Model):
+    class Meta:
+        ordering = ['name']
     name = models.CharField(max_length=128)
     stat = models.IntegerField(choices=STATS)
     def __unicode__(self):
         return self.name
 
 class CreatureAttack(models.Model):
+    class Meta:
+        ordering = ['creature']
     attack = models.ForeignKey('Attack')
     creature = models.ForeignKey('Creature')
     extraText = models.TextField(null=True, blank=True)
@@ -111,6 +119,8 @@ class CreatureAttack(models.Model):
         return "%s (%s)" % (self.creature, self.attack.__unicode__())
 
 class CreatureSkill(models.Model):
+    class Meta:
+        ordering = ['creature']
     extraText = models.TextField(null=True, blank=True)
     extraModifier = models.IntegerField(default=0)
     skill = models.ForeignKey('Skill')
