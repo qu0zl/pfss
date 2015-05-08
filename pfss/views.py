@@ -49,8 +49,16 @@ class creatureInstance(object):
     def CMD(self):
         return int(10+self.BAB+self.StrMod+self.DexMod-self.base.Size.ACbonus) # TODO misc modifiers like 4 legs vs trip
     @property
+    def toughness(self):
+        if self.base.Feats.filter(name='Toughness').count():
+            if self.base.HD > 3:
+                return self.base.HD
+            else:
+                return 3
+        return 0
+    @property
     def HP(self):
-        return int(((self.base.HDtype.half)+self.ConMod)*self.HD)
+        return int(((self.base.HDtype.half)+self.ConMod)*self.HD)+self.toughness
     @property
     def AC(self):
         return 10+self.DexMod+self.base.armourAC+self.base.Size.ACbonus+self.base.naturalAC+self.base.dodgeAC
@@ -114,7 +122,7 @@ class creatureInstance(object):
         return self.base.creatureattack_set.filter(attack__attackType=pfss.models.SPECIAL)
     @property
     def HPcomponents(self):
-        return "(%s%s%s%s)" % (self.HD,self.base.HDtype,"+" if self.ConMod >= 0 else "", self.ConMod*self.HD)
+        return "(%s%s%s%s)" % (self.HD,self.base.HDtype,"+" if self.ConMod >= 0 else "", (self.ConMod*self.HD)+self.toughness)
     @property
     def initiative(self):
         return self.DexMod + 4 if self.base.Feats.filter(name='Improved Initiative').count() else self.DexMod
@@ -160,11 +168,18 @@ class creatureInstance(object):
             return 'Not yet implemented'
 
 
-def creatureList(request):
+def creatureList(request, group=None):
     creatures = pfss.models.Creature.objects.all()
+    if group:
+        creatures = creatures.filter(Groups__id=group)
+        creatureList = []
+        for creature in creatures:
+            creatureList.append({'creature':creature, 'augmented':creature.groupentry_set.filter(Group_id=group)[0].Augmented})
+
     return render_to_response('list.html', \
         {
-            'creatures':creatures,
+            'group':group,
+            'creatures':creatureList if group else creatures,
         }, \
         RequestContext(request))
 
@@ -183,9 +198,9 @@ def handleList(request):
             }, \
             RequestContext(request))
 
-def creatureView(request, cid):
+def creatureView(request, cid, augmentSummons=False):
 
-    creature = creatureInstance(pfss.models.Creature.objects.get(id=cid))
+    creature = creatureInstance(pfss.models.Creature.objects.get(id=cid), augmentSummons)
 
     return render_to_response('creature_view.html', \
         {

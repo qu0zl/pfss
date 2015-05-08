@@ -12,9 +12,11 @@ urlpatterns = patterns(
     url(r"^$", TemplateView.as_view(template_name="homepage.html"), name="home"),
     url(r"^admin/", include(admin.site.urls)),
     url(r"^account/", include("account.urls")),
-    url(r'^list/$', views.creatureList),
     url(r'^list/handle/$', views.handleList),
+    url(r'^list/$', views.creatureList),
+    url(r'^list/(?P<group>\d+)/$', views.creatureList),
     url(r'^creature/(\d+)/$', views.creatureView),
+    url(r'^creature/(\d+)/augment/$', views.creatureView, kwargs={"augmentSummons":True}),
 
 )
 

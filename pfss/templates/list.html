@@ -3,14 +3,21 @@
 {% block head_title %}"Choose Creatures"{% endblock %}
 
 {% block body %}
-<form method="post" id="creature_list" action="/list/handle/"> {% csrf_token %}
+<form method="post" id="creature_list" action="/pfs/list/handle/"> {% csrf_token %}
 {% for creature in creatures %}
 <div class ="IB" style="width: 600px;">
-    <div class=IB>{{creature.name}}</div>
+    {% if group %}
+    <div class=IB style="width:50%;"><a href='/pfs/creature/{{creature.creature.id}}/{% if creature.augmented %}augment/{%endif%}'>{{creature.creature.name}}</a></div>
+    <div class="IB right">
+        <div class="IB right pad"><input type="checkbox" checked name=creature_{%if creature.augmented %}augment_{%endif%}{{creature.creature.id}}>Include</input></div>
+    </div>
+    {% else %}
+    <div class=IB style="width:50%;"><a href='/pfs/creature/{{creature.id}}/'>{{creature.name}}</a><a class='right' href='/pfs/creature/{{creature.id}}/augment/'>(Augment Summons)</a></div>
     <div class="IB right">
     <div class="IB left pad"><input type="checkbox" name=creature_{{creature.id}}>Include</input></div>
     <div class="IB right pad"><input type="checkbox" name=creature_augment_{{creature.id}}>Include with Augment Summons</input></div>
     </div>
+    {% endif %}
 </div>
 {% endfor %}
 <button type="submit" style="display:block; white-space:nowrap">Generate</button>

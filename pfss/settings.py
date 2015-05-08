@@ -60,7 +60,7 @@ STATIC_ROOT = os.path.join(PACKAGE_ROOT, "site_media", "static")
 
 # URL prefix for static files.
 # Example: "http://media.lawrence.com/static/"
-STATIC_URL = "/site_media/static/"
+STATIC_URL = "/pfs/site_media/static/"
 
 # Additional locations of static files
 STATICFILES_DIRS = [
@@ -94,6 +94,7 @@ TEMPLATE_CONTEXT_PROCESSORS = [
     "django.contrib.messages.context_processors.messages",
     "account.context_processors.account",
     "pinax_theme_bootstrap.context_processors.theme",
+    "pfss.context_processors.site_wide_context",
 ]
 
 

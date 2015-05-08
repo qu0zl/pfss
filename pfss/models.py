@@ -2,6 +2,7 @@ from django.db import models
 from django import forms
 from django.forms.models import modelformset_factory
 from django.contrib.auth.models import User
+import re
 
 # greg could be useful
 #User.profile = property(lambda u: profiles.models.Profile.objects.get_or_create(user=u)[0])
@@ -59,6 +60,19 @@ class Feat(models.Model):
     def __unicode__(self):
         return self.name
 
+class GroupEntry(models.Model):
+    Group = models.ForeignKey('CreatureGroup')
+    creature = models.ForeignKey('Creature')
+    text = models.CharField(max_length=128, blank=True)
+    Augmented = models.BooleanField(default=False)
+    def __unicode__(self):
+        return "%s (%s)%s" % (self.Group, self.creature, self.text)
+
+class CreatureGroup(models.Model):
+    name = models.CharField(max_length=128)
+    def __unicode__(self):
+        return self.name
+
 class CreatureType(models.Model):
     name = models.CharField(max_length=128)
     BAB_Progression = models.IntegerField(default=2, choices=((1,'Slow'),(2,'Medium'),(3,'Fast')))
@@ -93,8 +107,8 @@ class CreatureAttack(models.Model):
     count = models.IntegerField(default=1)
     def __unicode__(self):
         if self.count > 1:
-            return "%s x %s" % (self.count, self.attack.__unicode__())
-        return self.attack.__unicode__()
+            return "%s (%s x %s)" % (self.creature, self.count, self.attack.__unicode__())
+        return "%s (%s)" % (self.creature, self.attack.__unicode__())
 
 class CreatureSkill(models.Model):
     extraText = models.TextField(null=True, blank=True)
@@ -147,7 +161,7 @@ class Attack(models.Model):
     def dmg(self):
         return "%s%s" % (self.dCount, self.dType)
     def __unicode__(self):
-        return "%s %s%s" % (self.name, self.dCount, self.dType)
+        return u"%s %s%s" % (self.name, self.dCount, self.dType)
 
 class SpecialAbility(models.Model):
     name = models.CharField(max_length=128)
@@ -161,6 +175,14 @@ class SpecialAbility(models.Model):
         else:
             returnText = self.text
             returnText = self.text.replace( '{{CHA_POS}}', creature.ChaText(True) )
+            try:
+                CON_MOD = int(returnText.split('{{CON_MOD_')[1].split('}')[0])
+                CON_MOD += creature.ConMod
+                returnText = re.sub('{{CON_MOD_[0-9]*?}}', str(CON_MOD), returnText)
+            except IndexError:
+                pass
+            except Exception as e:
+                import pdb; pdb.set_trace()
             returnText = returnText.replace( '{{HD}}', str(creature.HD) )
         return returnText
 
@@ -172,6 +194,8 @@ class Size(models.Model):
         return self.name
 
 class Creature(models.Model):
+    class Meta:
+        ordering = ['name']
     name = models.CharField(max_length=256)
     Str = models.IntegerField()
     Dex = models.IntegerField()
@@ -186,6 +210,7 @@ class Creature(models.Model):
     Attacks = models.ManyToManyField('Attack', blank=True, null=True, through='CreatureAttack')
     Languages = models.ManyToManyField('Language', blank=True, null=True)
     Feats = models.ManyToManyField('Feat', blank=True, null=True)
+    Groups = models.ManyToManyField('CreatureGroup', blank=True, null=True, through='GroupEntry')
     Size = models.ForeignKey('Size', default=None)
     Type = models.ForeignKey('CreatureType', default=None, null=True)
     Special = models.ManyToManyField('SpecialAbility', default=None, blank=True, null=True)
