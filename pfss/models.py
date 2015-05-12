@@ -3,6 +3,7 @@ from django import forms
 from django.forms.models import modelformset_factory
 from django.contrib.auth.models import User
 import re
+#import fractions
 
 # greg could be useful
 #User.profile = property(lambda u: profiles.models.Profile.objects.get_or_create(user=u)[0])
@@ -55,6 +56,11 @@ class Die(models.Model):
     def __unicode__(self):
         return u"d%s" % self.size
 
+class Alignment(models.Model):
+    name = models.CharField(max_length=128)
+    short = models.CharField(max_length=3)
+    def __unicode__(self):
+        return self.name
 class Feat(models.Model):
     name = models.CharField(max_length=128)
     def __unicode__(self):
@@ -73,10 +79,19 @@ class CreatureGroup(models.Model):
     def __unicode__(self):
         return self.name
 
+class CreatureExtraType(models.Model):
+    name = models.CharField(max_length=128)
+    Defense = models.CharField(max_length=256, blank=True)
+    Offense = models.CharField(max_length=256, blank=True)
+    Special = models.ManyToManyField('SpecialAbility', blank=True, null=True)
+    def __unicode__(self):
+        return self.name
+
 class CreatureType(models.Model):
     class Meta:
         ordering = ['name']
     name = models.CharField(max_length=128)
+    HDtype = models.ForeignKey('Die', default=None,null=True, blank=True)
     BAB_Progression = models.IntegerField(default=2, choices=((1,'Slow'),(2,'Medium'),(3,'Fast')))
     GoodSave1 = models.IntegerField(default=None, choices=((None,'None'),)+SAVES, null=True, blank=True)
     GoodSave2 = models.IntegerField(default=None, choices=((None,'None'),)+SAVES, null=True, blank=True)
@@ -191,8 +206,6 @@ class SpecialAbility(models.Model):
                 returnText = re.sub('{{CON_MOD_[0-9]*?}}', str(CON_MOD), returnText)
             except IndexError:
                 pass
-            except Exception as e:
-                import pdb; pdb.set_trace()
             returnText = returnText.replace( '{{HD}}', str(creature.HD) )
         return returnText
 
@@ -214,26 +227,62 @@ class Creature(models.Model):
     Wis = models.IntegerField()
     Cha = models.IntegerField()
     SR = models.IntegerField(default=0)
+    # two fields to store CR as a fraction
+    CRnum = models.IntegerField(default=1)
+    CRdenom = models.IntegerField(default=1)
     #Speed = models.IntegerField(choices=map( lambda x: (x,str(x)), range(5,300,5)), default=30)
     Speed = models.CharField(max_length=256, blank=True)
-    HDtype = models.ForeignKey('Die', default=None)
     Attacks = models.ManyToManyField('Attack', blank=True, null=True, through='CreatureAttack')
     Languages = models.ManyToManyField('Language', blank=True, null=True)
     Feats = models.ManyToManyField('Feat', blank=True, null=True)
     Groups = models.ManyToManyField('CreatureGroup', blank=True, null=True, through='GroupEntry')
     Size = models.ForeignKey('Size', default=None)
+    Alignment = models.ForeignKey('Alignment', default=None,null=True)
     Type = models.ForeignKey('CreatureType', default=None, null=True)
     Special = models.ManyToManyField('SpecialAbility', default=None, blank=True, null=True)
+    ExtraType = models.ManyToManyField('CreatureExtraType', default=None, blank=True, null=True)
     HD = models.IntegerField(verbose_name='Hit-Dice', null=True) # Hit-dice
     armourAC = models.IntegerField(verbose_name='Armour Bonus', default=0)
     naturalAC = models.IntegerField(verbose_name='Natural AC Bonus', default=0)
     dodgeAC = models.IntegerField(verbose_name='Dodge AC Bonus', default=0)
     Skills = models.ManyToManyField('Skill', default=None, through='CreatureSkill', blank=True)
     Senses = models.CharField(max_length=256, blank=True)
-
+    CMDText = models.CharField(max_length=128, blank=True)
+    CMBText = models.CharField(max_length=128, blank=True)
+    OffenseText = models.TextField(blank=True)
+    DefenseText = models.TextField(blank=True)
+    def CRValue(self): # will round fractions down, which is what I want for Pathfinder maths
+        return self.CRnum/self.CRdenom
+        #return fractions.Fraction(self.CRnum, self.CRdenom)
+    def CR(self):
+        if self.CRdenom > 1:
+            return u"%s/%s" % (self.CRnum, self.CRdenom)
+        return str(self.CRnum)
+    def CMDTextRender(self, CMD):
+        return self.TextRender(CMD, self.CMDText)
+    def CMBTextRender(self,CMB):
+        return self.TextRender(CMB, self.CMBText)
+    def TextRender(self, baseNumber, text):
+        try:
+            BASE_PLUS = int(text.split('{{BASE_PLUS_')[1].split('}')[0]) + baseNumber
+            return re.sub('{{BASE_PLUS_[0-9]*?}}', str(BASE_PLUS), text)
+        except IndexError:
+            pass
+        return text
+    @property
+    def HDtype(self):
+        return self.Type.HDtype
+    @property
+    def extraTypes(self):
+        returnText = ''
+        for item in self.ExtraType.all():
+            if returnText:
+                returnText += ', '
+            returnText += item.__unicode__()
+        return returnText
     @property
     def BAB(self):
-        return self.Type.BAB(self.HD) + self.Size.ACbonus
+        return self.Type.BAB(self.HD)
     @property
     def baseWillSave(self):
         return self.baseSave(WILL)

@@ -1,23 +1,25 @@
 <div style="page-break-inside: avoid; font-size:0.875em; display:inline-block; border-style:solid; border-width:1px; padding:3px; margin:3px; width:45%;">
 <div id='header'>
     <div>
-        <div class="IB"><b>{{creature.name}}</b></div>{% if creature.augmented %}<div class="IB right">(Augment Summons)</div>{% endif %}
+        <div class="IB"><b>{{creature.name}}</b></div>{% if creature.augmented %}<div class="IB right">(Augment Summons)</div>{% endif %}<div class ="IB right"><b>CR {{creature.CR}}</b></div>
   </div>
-<div>{{creature.alignment}} {{creature.base.Size}} {{creature.base.Type}}</div>
-<div><b>Init</b> {{creature.initiative}}; <b>Senses</b> {{creature.base.Senses}}; {{creature.perception}}</div>
+  <div>{{creature.alignment}} {{creature.base.Size}} {{creature.base.Type}} {{creature.base.extraTypes}}</div>
+<div><b>Init</b> {{creature.initiativeText}}; <b>Senses</b> {{creature.base.Senses}}; {{creature.perception}}</div>
 </div>
-<div id='defence'>
-<h3>Defence</h3>
+<div id='defense'>
+<h3>Defense</h3>
   <div><b>AC</b> {{creature.AC}}, touch {{creature.touchAC}}, flat-footed {{creature.flatFootedAC}} {{creature.ACcomponents}}</div>
   <div><b>HP</b> {{creature.HP}} {{creature.HPcomponents}}</div>
   <div><b>Fort</b> {{creature.Fort}}, <b>Ref</b> {{creature.Ref}}, <b>Will</b> {{creature.Will}}</div>
   {% if creature.SR %}
   <div><b>SR</b> {{creature.SR}}</div>
   {% endif %}
+  {{creature.extraTypesDefences|safe}}
+  {{creature.base.DefenseText|safe}}
 </div>
 
-<div id='offence'>
-<h3>Offence</h3>
+<div id='offense'>
+<h3>Offense</h3>
   <div><b>Speed</b> {{creature.Speed}}</div>
   {% if creature.melee %}
     <div><b>Melee</b> {{creature.meleeText}}</div>
@@ -32,12 +34,13 @@
     <div class='IB'>{{special}}</div></div>
     {% endfor %}
   {% endif %}
+  {{creature.base.OffenseText|safe}}
 </div>
 
 <div id='statistics'>
   <h3>Statistics</h3>
   <div><b>Str</b> {{creature.Str}}, <b>Dex</b> {{creature.Dex}}, <b>Con</b> {{creature.Con}}, <b>Int</b> {{creature.Int}}, <b>Wis</b> {{creature.Wis}}, <b>Cha</b> {{creature.Cha}}</div>
-  <div><b>Base Atk</b> {{creature.BAB}}, <b>CMB</b> {{creature.CMB}}, <b>CMD</b> {{creature.CMD}}</div>
+  <div><b>Base Atk</b> {{creature.BAB}}, <b>CMB</b> {{creature.CMB}}{{creature.CMBText}}, <b>CMD</b> {{creature.CMD}}{{creature.CMDText}}</div>
   {% if creature.base.Feats.count %}
   <div><b>Feats </b>
       {% for feat in creature.base.Feats.all %}
@@ -63,14 +66,14 @@
 {% endfor %}
 </div>
 {% endif %}
-{% if creature.base.Special %}
+{% if creature.specials %}
 <div id='special'>
     <h3>Special Abilities</h3>
     {% for item in creature.specials %}
     <div>
           <b>{{item.name}}</b>
           {{item.text}}
-      </div>
+    </div>
     {% endfor %}
 </div>
 {% endif %}

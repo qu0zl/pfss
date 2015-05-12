@@ -16,8 +16,6 @@ urlpatterns = patterns(
     url(r'^list/$', views.creatureList),
     url(r'^list/(?P<group>\d+)/$', views.creatureList),
     url(r'^creature/(\d+)/$', views.creatureView),
-    url(r'^creature/(\d+)/augment/$', views.creatureView, kwargs={"augmentSummons":True}),
-
 )
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

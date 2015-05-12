@@ -9,10 +9,10 @@ import pfss.models
 # augment summoning.
 # The created instance is then passed to a template for rendering.
 class creatureInstance(object):
-    def __init__(self, base, augmentSummons=False):
+    def __init__(self, base, augmentSummons=False, celestial=False, fiendish=False, entropic=False, resolute=False):
         self.base = base
         self.augmented = augmentSummons
-        for item in ("name","HD","Dex","Int","Wis","Cha","BAB","Speed","Size","SR"):
+        for item in ("name","HD","Dex","Int","Wis","Cha","BAB","Speed","Size"):
             try:
                 setattr(self, item, base.__dict__[item])
             except Exception as e:
@@ -20,12 +20,50 @@ class creatureInstance(object):
         self.Str = base.Str + 4 if augmentSummons else base.Str
         self.Con = base.Con + 4 if augmentSummons else base.Con
         self.BAB = base.BAB
+        self.alignment = base.Alignment.short
+
+        self.initExtraTypes(celestial, fiendish)
+        self.initExtraTypesDefences()
+        self.initSpecials()
+    def initExtraTypes(self, celestial, fiendish):
+        self.extraTypes = []
+        self.extraTypes.extend(self.base.ExtraType.all())
+        if celestial:
+            self.extraTypes.append(pfss.models.CreatureExtraType.objects.get(name='Celestial'))
+        elif fiendish:
+            self.extraTypes.append(pfss.models.CreatureExtraType.objects.get(name='Fiendish'))
+    def initSpecials(self):
+        self.specialsReturn = []
+        for item in self.base.Special.all():
+            self.specialsReturn.append({'name':item.name, 'text':item.render(self)})
+        for extraType in self.extraTypes:
+            for item in extraType.Special.all():
+                self.specialsReturn.append({'name':item.name, 'text':item.render(self)})
+    def initExtraTypesDefences(self):
+        self.extraTypeDefencesText = ''
+        first = True
+        for item in self.extraTypes:
+            if item.Defense:
+                self.extraTypeDefencesText += "%s%s" % (', ' if not first else '', item.Defense)
+    @property
+    def SR(self):
+        # greg does this cause problems with base SR higher than would gain from template or
+        # does that never actually occur?
+        if True in map(lambda x: x.name=='Celestial' or x.name == 'Fiendish', self.extraTypes):
+            return str(self.CRValue + 5)
+    @property
+    def CR(self): # needs to take CR increases from templates into account greg
+        return self.base.CR()
+    @property
+    def CRValue(self): # needs to take CR increases from templates into account greg
+        return self.base.CRValue()
+    @property
+    def extraTypesDefences(self):
+        return self.extraTypeDefencesText
+
     @property
     def specials(self):
-        specialsReturn = []
-        for item in self.base.Special.all():
-            specialsReturn.append({'name':item.name, 'text':item.render(self)})
-        return specialsReturn
+        return self.specialsReturn
     @property
     def Skills(self):
         skillsReturn = []
@@ -39,15 +77,24 @@ class creatureInstance(object):
                 return item
         return None
     @property
-    def CMB(self):
+    def CMBValue(self):
         if (self.base.Size.ACbonus>=2): # Tiny or smaller
             statMod = self.DexMod
         else:
             statMod = self.StrMod
-        return formatNumber((self.BAB+statMod-self.base.Size.ACbonus))
+        return self.BAB+statMod-self.base.Size.ACbonus
+    @property
+    def CMB(self):
+        return formatNumber(self.CMBValue)
     @property
     def CMD(self):
         return int(10+self.BAB+self.StrMod+self.DexMod-self.base.Size.ACbonus) # TODO misc modifiers like 4 legs vs trip
+    @property
+    def CMBText(self):
+        return self.base.CMBTextRender(self.CMBValue)
+    @property
+    def CMDText(self):
+        return self.base.CMDTextRender(self.CMD)
     @property
     def toughness(self):
         if self.base.Feats.filter(name='Toughness').count():
@@ -89,11 +136,13 @@ class creatureInstance(object):
         if self.base.Feats.filter(name='Weapon Finesse').count():
             if self.DexMod > mod:
                 mod = self.DexMod
-        return self.BAB+mod
+        return self.BAB+mod+self.base.Size.ACbonus
     def toHit(self,item):
-        # TODO need to add weapon finesse feat support
         if item.attackType == pfss.models.MELEE:
-            return "%s%s" % ( "+" if self.meleeBonus>=0 else "", self.meleeBonus)
+            if item.attackClass == pfss.models.SECONDARY and (self.melee.count() > 1 or (self.melee.count()==1 and self.melee.get().count>1)): 
+                return formatNumber(self.meleeBonus-5)
+            else:
+                return formatNumber(self.meleeBonus)
         else:
             return 'Not yet implemented'
 
@@ -103,14 +152,16 @@ class creatureInstance(object):
         output=""
         for item in self.melee:
             attack = item.attack
-            # greg should it check if only melee attack or if only PRIMARY, ie can I have some secondaries and still
-            # get 1.5x damage?
-            if attack.attackClass==pfss.models.TWO_HANDED or (self.melee.count()==1 and attack.attackClass==pfss.models.PRIMARY):
-                twoHandDmg=True
+            if self.StrMod < 0:
+                dmgMultiplier = 1
+            elif attack.attackClass==pfss.models.TWO_HANDED or ((self.melee.count()==1 and self.melee.get().count==1) and (attack.attackClass==pfss.models.PRIMARY or attack.attackClass==pfss.models.SECONDARY)):
+                dmgMultiplier = 1.5
+            elif attack.attackClass == pfss.models.SECONDARY:
+                dmgMultiplier = 0.5
             else:
-                twoHandDmg=False
-            extraDmg = int(self.StrMod * (1 if twoHandDmg==False else 1.5))
-            output = "%s%s%s%s %s (%s%s%s)" % (output,", " if not first else "", "%s x " % item.count if item.count > 1 else "", attack.name, self.toHit(attack), attack.dmg, formatNumber(extraDmg, noZero=True), " %s" % item.extraText if item.extraText else '')
+                dmgMultiplier = 1
+            extraDmg = int(self.StrMod * dmgMultiplier)
+            output = "%s%s%s%s %s (%s%s%s)" % (output,", " if not first else "", "%s x " % item.count if item.count > 1 else "", attack.name, self.toHit(attack), attack.dmg if item.attack.dCount else '', formatNumber(extraDmg, noZero=True) if item.attack.dCount else '', " %s" % item.extraText if item.extraText else '')
             first=False
         return output
 
@@ -126,6 +177,9 @@ class creatureInstance(object):
     @property
     def initiative(self):
         return self.DexMod + 4 if self.base.Feats.filter(name='Improved Initiative').count() else self.DexMod
+    @property
+    def initiativeText(self):
+        return formatNumber(self.initiative)
     @property
     def Will(self):
         return formatNumber(self.WisMod+self.base.baseWillSave)
@@ -160,14 +214,6 @@ class creatureInstance(object):
     def ChaMod(self):
         return (self.Cha - 10)/2
 
-    def toHit(self,item):
-        # TODO need to add weapon finesse feat support
-        if item.attackType == pfss.models.MELEE:
-            return "%s%s" % ( "+" if self.meleeBonus>=0 else "", self.meleeBonus)
-        else:
-            return 'Not yet implemented'
-
-
 def creatureList(request, group=None):
     creatures = pfss.models.Creature.objects.all()
     if group:
@@ -198,9 +244,14 @@ def handleList(request):
             }, \
             RequestContext(request))
 
-def creatureView(request, cid, augmentSummons=False):
+def creatureView(request, cid):
 
-    creature = creatureInstance(pfss.models.Creature.objects.get(id=cid), augmentSummons)
+    augment = bool(request.GET.get('augment'))
+    celestial = bool(request.GET.get('celestial'))
+    fiendish = bool(request.GET.get('infernal'))
+    entropic = bool(request.GET.get('entropic'))
+    resolute = bool(request.GET.get('resolute'))
+    creature = creatureInstance(pfss.models.Creature.objects.get(id=cid), augmentSummons=augment, celestial=celestial, fiendish=fiendish, entropic=entropic, resolute=resolute)
 
     return render_to_response('creature_view.html', \
         {

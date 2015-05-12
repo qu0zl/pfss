@@ -16,12 +16,12 @@
 {% for creature in creatures %}
 <div class ="IB" style="width: 600px;">
     {% if group %}
-    <div class=IB style="width:50%;"><a href='/pfs/creature/{{creature.creature.id}}/{% if creature.augmented %}augment/{%endif%}'>{{creature.creature.name}}</a></div>
+    <div class=IB style="width:50%;"><a href='/pfs/creature/{{creature.creature.id}}/{% if creature.augmented %}?augment=1{%endif%}'>{{creature.creature.name}}</a></div>
     <div class="IB right">
         <div class="IB right pad"><input class="c_check" type="checkbox" checked name=creature_{%if creature.augmented %}augment_{%endif%}{{creature.creature.id}}>Include</input></div>
     </div>
     {% else %}
-    <div class=IB style="width:50%;"><a href='/pfs/creature/{{creature.id}}/'>{{creature.name}}</a><a class='right' href='/pfs/creature/{{creature.id}}/augment/'>(Augment Summons)</a></div>
+    <div class=IB style="width:50%;"><a href='/pfs/creature/{{creature.id}}/'>{{creature.name}}</a><a class='right' href='/pfs/creature/{{creature.id}}/?augment=1'>(Augment Summons)</a></div>
     <div class="IB right">
     <div class="IB left pad"><input class="c_check" type="checkbox" name=creature_{{creature.id}}>Include</input></div>
     <div class="IB right pad"><input class="c_check" type="checkbox" name=creature_augment_{{creature.id}}>Include with Augment Summons</input></div>
