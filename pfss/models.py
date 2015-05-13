@@ -70,20 +70,41 @@ class GroupEntry(models.Model):
     Group = models.ForeignKey('CreatureGroup')
     creature = models.ForeignKey('Creature')
     text = models.CharField(max_length=128, blank=True)
-    Augmented = models.BooleanField(default=False)
     def __unicode__(self):
         return "%s (%s)%s" % (self.Group, self.creature, self.text)
 
 class CreatureGroup(models.Model):
     name = models.CharField(max_length=128)
+    AllowedExtraType = models.ManyToManyField('CreatureExtraType', blank=True, null=True)
+    DefaultExtraType = models.ManyToManyField('CreatureExtraType', blank=True, null=True, related_name="DefaultCreatureExtraType_set")
+    Augmented = models.BooleanField(default=False)
     def __unicode__(self):
-        return self.name
+        if self.Augmented or self.DefaultExtraType.all().count():
+            text = u"%s (%s" % (self.name, ' Augmented' if self.Augmented else '')
+            for item in self.DefaultExtraType.all():
+                text = u"%s %s" % (text, item.__unicode__())
+            text += " )"
+            return text
+        else:
+            return self.name
 
 class CreatureExtraType(models.Model):
     name = models.CharField(max_length=128)
     Defense = models.CharField(max_length=256, blank=True)
     Offense = models.CharField(max_length=256, blank=True)
     Special = models.ManyToManyField('SpecialAbility', blank=True, null=True)
+    Senses = models.CharField(max_length=256, blank=True)
+    # group extra types to make them mutually exclusive
+    Grouping = models.IntegerField(default=0, blank=True, null=True)
+    class Meta:
+        ordering = ['Grouping','name']
+    @property
+    def short(self):
+        return self.name.lower()
+    def RenderDefense(self, instance):
+        HD = instance.HD
+        return self.Defense.replace( '{{RES_BY_HD}}', str( 5 if HD <= 4 else 10 if HD <= 10 else 15))
+
     def __unicode__(self):
         return self.name
 

@@ -9,29 +9,33 @@ import pfss.models
 # augment summoning.
 # The created instance is then passed to a template for rendering.
 class creatureInstance(object):
-    def __init__(self, base, augmentSummons=False, celestial=False, fiendish=False, entropic=False, resolute=False):
+    def __init__(self, base, augment=False, celestial=False, fiendish=False, entropic=False, resolute=False):
         self.base = base
-        self.augmented = augmentSummons
+        self.augmented = augment
         for item in ("name","HD","Dex","Int","Wis","Cha","BAB","Speed","Size"):
             try:
                 setattr(self, item, base.__dict__[item])
             except Exception as e:
                 print e
-        self.Str = base.Str + 4 if augmentSummons else base.Str
-        self.Con = base.Con + 4 if augmentSummons else base.Con
+        self.Str = base.Str + 4 if augment else base.Str
+        self.Con = base.Con + 4 if augment else base.Con
         self.BAB = base.BAB
         self.alignment = base.Alignment.short
 
-        self.initExtraTypes(celestial, fiendish)
-        self.initExtraTypesDefences()
+        self.initExtraTypes(celestial, fiendish, entropic, resolute)
+        self.initExtraTypesText()
         self.initSpecials()
-    def initExtraTypes(self, celestial, fiendish):
+    def initExtraTypes(self, celestial, fiendish, entropic, resolute):
         self.extraTypes = []
         self.extraTypes.extend(self.base.ExtraType.all())
         if celestial:
             self.extraTypes.append(pfss.models.CreatureExtraType.objects.get(name='Celestial'))
         elif fiendish:
             self.extraTypes.append(pfss.models.CreatureExtraType.objects.get(name='Fiendish'))
+        elif entropic:
+            self.extraTypes.append(pfss.models.CreatureExtraType.objects.get(name='Entropic'))
+        elif resolute:
+            self.extraTypes.append(pfss.models.CreatureExtraType.objects.get(name='Resolute'))
     def initSpecials(self):
         self.specialsReturn = []
         for item in self.base.Special.all():
@@ -39,12 +43,14 @@ class creatureInstance(object):
         for extraType in self.extraTypes:
             for item in extraType.Special.all():
                 self.specialsReturn.append({'name':item.name, 'text':item.render(self)})
-    def initExtraTypesDefences(self):
+    def initExtraTypesText(self):
         self.extraTypeDefencesText = ''
-        first = True
+        self.extraSensesText =''
         for item in self.extraTypes:
             if item.Defense:
-                self.extraTypeDefencesText += "%s%s" % (', ' if not first else '', item.Defense)
+                self.extraTypeDefencesText = "%s%s " % (self.extraTypeDefencesText, item.RenderDefense(self))
+            if item.Senses:
+                self.extraSensesText = "%s%s " % (self.extraSensesText, item.Senses)
     @property
     def SR(self):
         # greg does this cause problems with base SR higher than would gain from template or
@@ -214,18 +220,31 @@ class creatureInstance(object):
     def ChaMod(self):
         return (self.Cha - 10)/2
 
-def creatureList(request, group=None):
+def creatureList(request, group_ID=None):
     creatures = pfss.models.Creature.objects.all()
-    if group:
-        creatures = creatures.filter(Groups__id=group)
-        creatureList = []
-        for creature in creatures:
-            creatureList.append({'creature':creature, 'augmented':creature.groupentry_set.filter(Group_id=group)[0].Augmented})
+    group = None
+    extraTypes = []
+    defaultTypes = []
+    if group_ID:
+        try:
+            group = pfss.models.CreatureGroup.objects.get(id=group_ID)
+            extraTypes = group.AllowedExtraType.all()
+            defaultTypes = group.DefaultExtraType.all()
+        except pfss.models.CreatureGroup.DoesNotExist:
+            pass
+        creatures = creatures.filter(Groups__id=group_ID)
+        #creatureList = []
+        #for creature in creatures:
+        #    creatureList.append({'creature':creature, 'augmented':creature.groupentry_set.filter(Group_id=group_ID)[0].Augmented})
+    else:
+        extraTypes = pfss.models.CreatureExtraType.objects.all()
 
     return render_to_response('list.html', \
         {
             'group':group,
-            'creatures':creatureList if group else creatures,
+            'creatures':creatures,
+            'extraTypes':extraTypes,
+            'defaultTypes':defaultTypes,
         }, \
         RequestContext(request))
 
@@ -233,10 +252,17 @@ def handleList(request):
     creatures = []
     for key in request.POST:
         if key.startswith('creature_'):
-            if key.startswith('creature_augment_'):
-                creature=creatureInstance(pfss.models.Creature.objects.get(id=int(key.split('_')[-1])), True)
-            else:
-                creature=creatureInstance(pfss.models.Creature.objects.get(id=int(key.split('_')[-1])))
+            #if key.startswith('creature_augment_'):
+            #    creature=creatureInstance(pfss.models.Creature.objects.get(id=int(key.split('_')[-1])), True)
+            #else:
+            id = int(key[9:])
+            args = {}
+            creature_prefix = 'modify_%s_' % id
+            for inner in request.POST:
+                if inner.startswith(creature_prefix):
+                    argument = inner.split('_')[-1]
+                    args[argument] = 1
+            creature=creatureInstance(pfss.models.Creature.objects.get(id=id), **args)
             creatures.append(creature)
     return render_to_response('render.html', \
             {

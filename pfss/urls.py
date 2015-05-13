@@ -7,15 +7,17 @@ from django.contrib import admin
 
 from . import views
 
+prefix=""
+#prefix='pfs/' # used to run with runserver
 urlpatterns = patterns(
     "",
-    url(r"^$", TemplateView.as_view(template_name="homepage.html"), name="home"),
-    url(r"^admin/", include(admin.site.urls)),
-    url(r"^account/", include("account.urls")),
-    url(r'^list/handle/$', views.handleList),
-    url(r'^list/$', views.creatureList),
-    url(r'^list/(?P<group>\d+)/$', views.creatureList),
-    url(r'^creature/(\d+)/$', views.creatureView),
+    url(r"^%s$" % prefix, TemplateView.as_view(template_name="homepage.html"), name="home"),
+    url(r"^%sadmin/" % prefix, include(admin.site.urls)),
+    url(r"^%saccount/" % prefix, include("account.urls")),
+    url(r'^%slist/handle/$' % prefix, views.handleList),
+    url(r'^%slist/$' % prefix, views.creatureList),
+    url(r'^%slist/(?P<group_ID>\d+)/$' % prefix, views.creatureList),
+    url(r'^%screature/(\d+)/$' % prefix, views.creatureView),
 )
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

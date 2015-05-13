@@ -4,7 +4,7 @@
         <div class="IB"><b>{{creature.name}}</b></div>{% if creature.augmented %}<div class="IB right">(Augment Summons)</div>{% endif %}<div class ="IB right"><b>CR {{creature.CR}}</b></div>
   </div>
   <div>{{creature.alignment}} {{creature.base.Size}} {{creature.base.Type}} {{creature.base.extraTypes}}</div>
-<div><b>Init</b> {{creature.initiativeText}}; <b>Senses</b> {{creature.base.Senses}}; {{creature.perception}}</div>
+  <div><b>Init</b> {{creature.initiativeText}}; <b>Senses</b> {{creature.base.Senses}} {{creature.extraSensesText}}; {{creature.perception}}</div>
 </div>
 <div id='defense'>
 <h3>Defense</h3>
