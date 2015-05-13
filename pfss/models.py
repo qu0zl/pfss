@@ -18,6 +18,10 @@ LIGHT=2
 ONE_HANDED=3
 TWO_HANDED=4
 
+NO_STR=1
+ADD_STR=2
+NEG_STR_ONLY=3
+
 STR=1
 DEX=2
 CON=3
@@ -103,7 +107,15 @@ class CreatureExtraType(models.Model):
         return self.name.lower()
     def RenderDefense(self, instance):
         HD = instance.HD
-        return self.Defense.replace( '{{RES_BY_HD}}', str( 5 if HD <= 4 else 10 if HD <= 10 else 15))
+        # greg need to calculate DR by HD also
+        returnText = self.Defense.replace( '{{RES_BY_HD}}', str( 5 if HD <= 4 else 10 if HD <= 10 else 15))
+        if returnText.find('{{DR_BY_HD}}'):
+            DR = 0 if HD <=4 else 5 if HD <= 10 else 10
+            if DR:
+                returnText = returnText.replace('{{DR_BY_HD}}',str(DR))
+            else:
+                returnText = returnText.split('<b>DR')[0]
+        return returnText
 
     def __unicode__(self):
         return self.name
@@ -197,11 +209,15 @@ class Attack(models.Model):
 
     ATTACK_CLASSES=((PRIMARY, 'Primary'), (SECONDARY, 'Secondary'), (LIGHT, 'Light'), (ONE_HANDED,'One Handed'), ('TWO_HANDED','Two Handed'))
     ATTACK_TYPES=((MELEE, 'Melee'), (RANGED, 'Ranged'), (SPECIAL, 'SPECIAL'))
+    RANGED_STR_OPTIONS = ( (NO_STR, "Don't add Str"), (ADD_STR, "Add Str"), (NEG_STR_ONLY, "Add Str if negative") )
+
     name = models.CharField(max_length=64)
+    crit = models.CharField(max_length=16, blank=True)
     dType = models.ForeignKey('Die', default=None)
     dCount = models.IntegerField(default=1)
     attackType = models.IntegerField(default=0, choices=ATTACK_TYPES)
     attackClass = models.IntegerField(default=0, choices=ATTACK_CLASSES)
+    rangedStrOption = models.IntegerField(default=ADD_STR, choices=RANGED_STR_OPTIONS)
 
     @property
     def dmg(self):

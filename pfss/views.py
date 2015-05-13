@@ -143,15 +143,24 @@ class creatureInstance(object):
             if self.DexMod > mod:
                 mod = self.DexMod
         return self.BAB+mod+self.base.Size.ACbonus
+    @property
+    def rangedBonus(self):
+        mod = self.DexMod
+        return self.BAB+mod+self.base.Size.ACbonus
     def toHit(self,item):
         if item.attackType == pfss.models.MELEE:
             if item.attackClass == pfss.models.SECONDARY and (self.melee.count() > 1 or (self.melee.count()==1 and self.melee.get().count>1)): 
                 return formatNumber(self.meleeBonus-5)
             else:
                 return formatNumber(self.meleeBonus)
+        elif item.attackType == pfss.models.RANGED:
+            return formatNumber(self.rangedBonus)
         else:
             return 'Not yet implemented'
-
+    def renderAttack(self, existingText, first, item, extraDmg):
+        attack = item.attack
+        output = "%s%s%s%s %s (%s%s%s%s)" % (existingText,", " if not first else "", "%s x " % item.count if item.count > 1 else "", attack.name, self.toHit(attack), attack.dmg if item.attack.dCount else '', formatNumber(extraDmg, noZero=True) if item.attack.dCount else '', "/%s" % attack.crit if attack.crit else '', " %s" % item.extraText if item.extraText else '')
+        return output
     @property
     def meleeText(self):
         first = True
@@ -167,13 +176,28 @@ class creatureInstance(object):
             else:
                 dmgMultiplier = 1
             extraDmg = int(self.StrMod * dmgMultiplier)
-            output = "%s%s%s%s %s (%s%s%s)" % (output,", " if not first else "", "%s x " % item.count if item.count > 1 else "", attack.name, self.toHit(attack), attack.dmg if item.attack.dCount else '', formatNumber(extraDmg, noZero=True) if item.attack.dCount else '', " %s" % item.extraText if item.extraText else '')
+            output = self.renderAttack(output, first, item, extraDmg)
             first=False
         return output
 
     @property
     def ranged(self):
         return self.base.creatureattack_set.filter(attack__attackType=pfss.models.RANGED)
+    @property
+    def rangedText(self):
+        first = True
+        output = ""
+        for item in self.ranged:
+            attack = item.attack
+            if attack.rangedStrOption == pfss.models.ADD_STR or (attack.rangedStrOption == pfss.models.NEG_STR_ONLY and self.StrMod < 0):
+                extraDmg = self.StrMod
+            else:
+                extraDmg = 0
+
+            output = self.renderAttack(output, first, item, extraDmg)
+            first = False
+        return output
+    #return self.base.creatureattack_set.filter(attack__attackType=pfss.models.RANGED)
     @property
     def special(self):
         return self.base.creatureattack_set.filter(attack__attackType=pfss.models.SPECIAL)
