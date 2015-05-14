@@ -4,28 +4,57 @@
 
 {% block body %}
 <script>
+    function clicker(className, value) {
+        $(className).prop('checked',value);
+    };
+    $( document ).ready( function() {
+        $('#include_all').click(function(){
+            clicker('.c_check',$(this).prop('checked'));
+        });
+        $('#augment_all').click(function(){
+            clicker('.cb_augment',$(this).prop('checked'));
+        });
+
+        {% for item in extraTypes %}
+        $('#{{item.short}}_all').click(function(){
+            clicker('.cb_{{item.short}}',$(this).prop('checked'));
+        });
+        {% endfor %}
+    });
     function toSubmit() {
         if ($('input.c_check:checked').length <= 0) {
             alert('You must select some creatures to include.');
             return false;
         }
         return true;
-    }
+    };
 </script>
 <form method="post" id="creature_list" action="/pfs/list/handle/" onsubmit="return toSubmit()"> {% csrf_token %}
+<div class="container-fluid">
+    <div class="IB" style="width:100%;">
+        <div class="IB" style="width:30%;"></div>
+        <div class="IB right">
+            <div class="IB left pad"><input type="checkbox" {% if group %}checked{% endif %} id="include_all">Include</div>
+            <div class="IB left pad"><input type="checkbox" {% if group and group.Augmented %}checked{% endif %} id="augment_all">Augment Summons</div>
+            {% for item in extraTypes %}
+            <div class="IB right pad"><input type="checkbox" {% if item in defaultTypes %}checked{% endif %} id="{{item.short}}_all">{{item.name}}</input></div>
+            {% endfor %}
+        </div>
+    </div>
 {% for creature in creatures %}
-<div class ="IB {% if forloop.counter|divisibleby:2 %}even{% else %} odd {% endif %}" style="width: 800px;">
+<div class ="IB {% if forloop.counter|divisibleby:2 %}even{% else %} odd {% endif %}" style="width:100%;">
     <div class=IB style="width:30%;"><a href='/pfs/creature/{{creature.id}}/'>{{creature.name}}</a></div>
     <div class="IB right">
         <div class="IB left pad"><input class="c_check" type="checkbox" {% if group %} checked {% endif %} name=creature_{{creature.id}}>Include</input></div>
         {% for item in extraTypes %}
-        <div class="IB right pad"><input type="checkbox" {% if item in defaultTypes %}checked{% endif %} name=modify_{{creature.id}}_{{item.short}}>{{item.name}}</input></div>
+        <div class="IB right pad"><input class="cb_{{item.short}}" type="checkbox" {% if item in defaultTypes %}checked{% endif %} name=modify_{{creature.id}}_{{item.short}}>{{item.name}}</input></div>
         {% endfor %}
-        <div class="IB right pad"><input type="checkbox" {% if group and group.Augmented %}checked{% endif %} name=modify_{{creature.id}}_augment>Augment Summons</input></div>
+        <div class="IB right pad"><input class="cb_augment" type="checkbox" {% if group and group.Augmented %}checked{% endif %} name=modify_{{creature.id}}_augment>Augment Summons</input></div>
         </div>
 
 </div>
 {% endfor %}
+</div>
 <button type="submit" style="display:block; white-space:nowrap">Generate</button>
 </form>
 
