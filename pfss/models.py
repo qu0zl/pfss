@@ -156,11 +156,12 @@ class Skill(models.Model):
 
 class CreatureAttack(models.Model):
     class Meta:
-        ordering = ['creature']
+        ordering = ['creature','exclusive']
     attack = models.ForeignKey('Attack')
     creature = models.ForeignKey('Creature')
     extraText = models.TextField(null=True, blank=True)
     count = models.IntegerField(default=1)
+    exclusive = models.BooleanField(default=False)
     def __unicode__(self):
         if self.count > 1:
             return "%s (%s x %s)" % (self.creature, self.count, self.attack.__unicode__())
@@ -168,7 +169,7 @@ class CreatureAttack(models.Model):
 
 class CreatureSkill(models.Model):
     class Meta:
-        ordering = ['creature']
+        ordering = ['creature','skill']
     extraText = models.TextField(null=True, blank=True)
     extraModifier = models.IntegerField(default=0)
     skill = models.ForeignKey('Skill')
@@ -228,10 +229,13 @@ class Attack(models.Model):
 class SpecialAbility(models.Model):
     name = models.CharField(max_length=128)
     dynamicText = models.BooleanField(default=False)
-    text = models.TextField()
+    isAttack = models.BooleanField(default=True)
+    text = models.TextField(blank=True)
     def __unicode__(self):
         return self.name
     def render(self, creature=None):
+        if not self.text:
+            return ''
         if not self.dynamicText or not creature:
             return self.text
         else:
@@ -298,11 +302,11 @@ class Creature(models.Model):
     def CMDTextRender(self, CMD):
         return self.TextRender(CMD, self.CMDText)
     def CMBTextRender(self,CMB):
-        return self.TextRender(CMB, self.CMBText)
-    def TextRender(self, baseNumber, text):
+        return self.TextRender(CMB, self.CMBText, useFormatNumber=True)
+    def TextRender(self, baseNumber, text, useFormatNumber=False):
         try:
             BASE_PLUS = int(text.split('{{BASE_PLUS_')[1].split('}')[0]) + baseNumber
-            return re.sub('{{BASE_PLUS_[0-9]*?}}', str(BASE_PLUS), text)
+            return re.sub('{{BASE_PLUS_[0-9]*?}}', str(BASE_PLUS) if not useFormatNumber else formatNumber(BASE_PLUS), text)
         except IndexError:
             pass
         return text
@@ -328,6 +332,8 @@ class Creature(models.Model):
         return self.baseSave(FORT)
     @property
     def baseRefSave(self):
+        if self.Feats.filter(name='Lightning Reflexes').count():
+            return 2 + self.baseSave(REF)
         return self.baseSave(REF)
     def baseSave(self, which):
         if which in (self.Type.GoodSave1, self.Type.GoodSave2, self.Type.GoodSave3):

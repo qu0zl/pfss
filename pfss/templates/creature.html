@@ -27,14 +27,9 @@
   {% if creature.ranged%}
     <div><b>Ranged</b> {{creature.rangedText}}</div>
   {% endif %}
-  {% if creature.special%}
-  <div>
-      <div class='bold left IB'>Special Attack</div>
-    {% for special in creature.special %}    
-    <div class='IB'>{{special}}</div></div>
-    {% endfor %}
+  {% if creature.specialShort or creature.base.OffenseText %}
+  <div><b>Special Attacks</b> {{ creature.specialShort }} {% if creature.specialShort %}<br>{%endif%} {{creature.base.OffenseText|safe}}</div>
   {% endif %}
-  {{creature.base.OffenseText|safe}}
 </div>
 
 <div id='statistics'>

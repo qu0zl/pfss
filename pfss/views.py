@@ -38,11 +38,21 @@ class creatureInstance(object):
             self.extraTypes.append(pfss.models.CreatureExtraType.objects.get(name='Resolute'))
     def initSpecials(self):
         self.specialsReturn = []
+        self.specialShort = ""
+        first = True
         for item in self.base.Special.all():
-            self.specialsReturn.append({'name':item.name, 'text':item.render(self)})
+            if item.text:
+                self.specialsReturn.append({'name':item.name, 'text':item.render(self)})
+            if item.isAttack:
+                self.specialShort = "%s%s%s" % (self.specialShort, ", " if not first else "", item.name)
+                first = False
         for extraType in self.extraTypes:
             for item in extraType.Special.all():
-                self.specialsReturn.append({'name':item.name, 'text':item.render(self)})
+                if item.text:
+                    self.specialsReturn.append({'name':item.name, 'text':item.render(self)})
+                if item.isAttack:
+                    self.specialShort = "%s%s%s" % (self.specialShort, ", " if not first else "", item.name)
+                    first = False
     def initExtraTypesText(self):
         self.extraTypeDefencesText = ''
         self.extraSensesText =''
@@ -159,7 +169,7 @@ class creatureInstance(object):
             return 'Not yet implemented'
     def renderAttack(self, existingText, first, item, extraDmg):
         attack = item.attack
-        output = "%s%s%s%s %s (%s%s%s%s)" % (existingText,", " if not first else "", "%s x " % item.count if item.count > 1 else "", attack.name, self.toHit(attack), attack.dmg if item.attack.dCount else '', formatNumber(extraDmg, noZero=True) if item.attack.dCount else '', "/%s" % attack.crit if attack.crit else '', " %s" % item.extraText if item.extraText else '')
+        output = "%s%s%s%s %s (%s%s%s%s)" % (existingText,", " if (not first and not item.exclusive) else " or " if (not first and item.exclusive) else "", "%s x " % item.count if item.count > 1 else "", attack.name, self.toHit(attack), attack.dmg if item.attack.dCount else '', formatNumber(extraDmg, noZero=True) if item.attack.dCount else '', "/%s" % attack.crit if attack.crit else '', " %s" % item.extraText if item.extraText else '')
         return output
     @property
     def meleeText(self):
@@ -301,7 +311,7 @@ def creatureView(request, cid):
     fiendish = bool(request.GET.get('infernal'))
     entropic = bool(request.GET.get('entropic'))
     resolute = bool(request.GET.get('resolute'))
-    creature = creatureInstance(pfss.models.Creature.objects.get(id=cid), augmentSummons=augment, celestial=celestial, fiendish=fiendish, entropic=entropic, resolute=resolute)
+    creature = creatureInstance(pfss.models.Creature.objects.get(id=cid), augment=augment, celestial=celestial, fiendish=fiendish, entropic=entropic, resolute=resolute)
 
     return render_to_response('creature_view.html', \
         {
