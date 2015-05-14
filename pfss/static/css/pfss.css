@@ -4,4 +4,4 @@
 .bold {font-weight:bold}
 .pad {padding:5px;}
 .odd {background:#e0e0e0}
-h3 {font-size:18px; font-weight:bold; border-top:1px solid rgb(0,0,0); border-bottom:1px solid rgb(0,0,0);}
+h3 {font-size:18px; font-weight:bold; border-top:1px solid rgb(0,0,0); border-bottom:1px solid rgb(0,0,0); margin-top:6px; margin-bottom:6px;}

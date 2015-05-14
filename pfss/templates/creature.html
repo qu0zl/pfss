@@ -16,6 +16,12 @@
   {% endif %}
   {{creature.extraTypesDefences|safe}}
   {{creature.base.DefenseText|safe}}
+  {% if creature.base.Type.Immune %}
+  <div><b>Immune</b> {{creature.base.Type.Immune}}</div>
+  {% endif %}
+  {% if creature.base.Type.Weaknesses %}
+  <div><b>Weaknesses</b> {{creature.base.Type.Weaknesses}}</div>
+  {% endif %}
 </div>
 
 <div id='offense'>
@@ -35,23 +41,12 @@
 <div id='statistics'>
   <h3>Statistics</h3>
   <div><b>Str</b> {{creature.Str}}, <b>Dex</b> {{creature.Dex}}, <b>Con</b> {{creature.Con}}, <b>Int</b> {{creature.Int}}, <b>Wis</b> {{creature.Wis}}, <b>Cha</b> {{creature.Cha}}</div>
-  <div><b>Base Atk</b> {{creature.BAB}}, <b>CMB</b> {{creature.CMB}}{{creature.CMBText}}, <b>CMD</b> {{creature.CMD}}{{creature.CMDText}}</div>
+  <div><b>Base Atk</b> {{creature.BABtext}}, <b>CMB</b> {{creature.CMB}}{{creature.CMBText}}, <b>CMD</b> {{creature.CMD}}{{creature.CMDText}}</div>
   {% if creature.base.Feats.count %}
-  <div><b>Feats </b>
-      {% for feat in creature.base.Feats.all %}
-      {% if not forloop.first %}, {% endif %}
-        {{feat}}
-      {% endfor %}
-  </div>
+  <div><b>Feats </b>{% for feat in creature.base.Feats.all %}{% if not forloop.first %}, {% endif %}{{feat}}{% endfor %}</div>
   {% endif %}
 </div>
-{% for item in creature.Skills %}
-{% if forloop.first %}<div><b>Skills </b> {% endif %}
-  {% if not forloop.first %}, {% endif %}
-  {{ item }}
-{% if forloop.last %}</div>{%endif%}
-
-{% endfor %}
+{% for item in creature.Skills %}{% if forloop.first %}<div><b>Skills </b> {% endif %}{% if not forloop.first %}, {% endif %}{{ item }}{% if forloop.last %}</div>{%endif%}{% endfor %}
 {% if creature.base.Languages.count %}
 <div>
 <b>Languages</b>

@@ -100,11 +100,14 @@ class creatureInstance(object):
             statMod = self.StrMod
         return self.BAB+statMod-self.base.Size.ACbonus
     @property
+    def BABtext(self):
+        return formatNumber(self.BAB)
+    @property
     def CMB(self):
         return formatNumber(self.CMBValue)
     @property
     def CMD(self):
-        return int(10+self.BAB+self.StrMod+self.DexMod-self.base.Size.ACbonus) # TODO misc modifiers like 4 legs vs trip
+        return int(10+self.BAB+self.StrMod+self.DexMod+self.dodgeAC-self.base.Size.ACbonus)
     @property
     def CMBText(self):
         return self.base.CMBTextRender(self.CMBValue)
@@ -124,21 +127,24 @@ class creatureInstance(object):
         return int(((self.base.HDtype.half)+self.ConMod)*self.HD)+self.toughness
     @property
     def AC(self):
-        return 10+self.DexMod+self.base.armourAC+self.base.Size.ACbonus+self.base.naturalAC+self.base.dodgeAC
+        return 10+self.DexMod+self.base.armourAC+self.base.Size.ACbonus+self.base.naturalAC+(1 if self.base.Feats.filter(name='Dodge').count() else 0)
     @property
     def touchAC(self):
-        return 10+self.DexMod+self.base.Size.ACbonus+self.base.dodgeAC
+        return 10+self.DexMod+self.base.Size.ACbonus+self.dodgeAC
     @property
     def flatFootedAC(self):
-        return 10+self.base.Size.ACbonus+self.base.naturalAC+self.base.armourAC
+        return 10+self.base.Size.ACbonus+self.base.naturalAC+self.base.armourAC + (self.DexMod if self.DexMod<0 else 0)
+    @property
+    def dodgeAC(self):
+        return (1 if self.base.Feats.filter(name='Dodge').count() else 0)
     @property
     def ACcomponents(self):
-        if self.base.armourAC or self.DexMod or self.base.naturalAC or self.base.dodgeAC or self.base.Size.ACbonus:
+        if self.base.armourAC or self.DexMod or self.base.naturalAC or self.dodgeAC or self.base.Size.ACbonus:
             return "(%s%s%s%s%s)" % ( \
                 ("%s Arm " % self.base.armourAC) if self.base.armourAC else "", \
                 ("%s Dex " % formatNumber(self.DexMod)) if self.DexMod else "", \
                 ("%s Nat " % formatNumber(self.base.naturalAC)) if self.base.naturalAC else "", \
-                ("%s Dge " % formatNumber(self.base.dodgeAC)) if self.base.dodgeAC else "", \
+                ("+1 Dge " if self.dodgeAC else ""), \
                 ("%s Sze " % formatNumber(self.base.Size.ACbonus)) if self.base.Size.ACbonus else ""
                 )
         else:
@@ -160,7 +166,10 @@ class creatureInstance(object):
     def toHit(self,item):
         if item.attackType == pfss.models.MELEE:
             if item.attackClass == pfss.models.SECONDARY and (self.melee.count() > 1 or (self.melee.count()==1 and self.melee.get().count>1)): 
-                return formatNumber(self.meleeBonus-5)
+                if self.base.Feats.filter(name='Multiattack').count():
+                    return formatNumber(self.meleeBonus-2)
+                else:
+                    return formatNumber(self.meleeBonus-5)
             else:
                 return formatNumber(self.meleeBonus)
         elif item.attackType == pfss.models.RANGED:
@@ -213,7 +222,7 @@ class creatureInstance(object):
         return self.base.creatureattack_set.filter(attack__attackType=pfss.models.SPECIAL)
     @property
     def HPcomponents(self):
-        return "(%s%s%s%s)" % (self.HD,self.base.HDtype,"+" if self.ConMod >= 0 else "", (self.ConMod*self.HD)+self.toughness)
+        return "(%s%s%s)" % (self.HD,self.base.HDtype, formatNumber((self.ConMod*self.HD)+self.toughness, noZero=True))
     @property
     def initiative(self):
         return self.DexMod + 4 if self.base.Feats.filter(name='Improved Initiative').count() else self.DexMod

@@ -66,6 +66,8 @@ class Alignment(models.Model):
     def __unicode__(self):
         return self.name
 class Feat(models.Model):
+    class Meta:
+        ordering = ['name']
     name = models.CharField(max_length=128)
     def __unicode__(self):
         return self.name
@@ -126,6 +128,8 @@ class CreatureType(models.Model):
     name = models.CharField(max_length=128)
     HDtype = models.ForeignKey('Die', default=None,null=True, blank=True)
     BAB_Progression = models.IntegerField(default=2, choices=((1,'Slow'),(2,'Medium'),(3,'Fast')))
+    Immune = models.TextField(blank=True)
+    Weaknesses = models.TextField(blank=True)
     GoodSave1 = models.IntegerField(default=None, choices=((None,'None'),)+SAVES, null=True, blank=True)
     GoodSave2 = models.IntegerField(default=None, choices=((None,'None'),)+SAVES, null=True, blank=True)
     GoodSave3 = models.IntegerField(default=None, choices=((None,'None'),)+SAVES, null=True, blank=True)
@@ -241,6 +245,16 @@ class SpecialAbility(models.Model):
         else:
             returnText = self.text
             returnText = self.text.replace( '{{CHA_POS}}', creature.ChaText(True) )
+            if returnText.find('{{CALC_CON_DC}}'):
+                returnText = returnText.replace('{{CALC_CON_DC}}', str(10+(creature.HD/2)+creature.ConMod))
+            if returnText.find('{{CALC_STR_DC}}'):
+                returnText = returnText.replace('{{CALC_STR_DC}}', str(10+(creature.HD/2)+creature.StrMod))
+            try:
+                STR_MOD = int(returnText.split('{{STR_MOD_')[1].split('}')[0])
+                STR_MOD += creature.StrMod
+                returnText = re.sub('{{STR_MOD_[0-9]*?}}', str(STR_MOD), returnText)
+            except IndexError:
+                pass
             try:
                 CON_MOD = int(returnText.split('{{CON_MOD_')[1].split('}')[0])
                 CON_MOD += creature.ConMod
@@ -285,7 +299,6 @@ class Creature(models.Model):
     HD = models.IntegerField(verbose_name='Hit-Dice', null=True) # Hit-dice
     armourAC = models.IntegerField(verbose_name='Armour Bonus', default=0)
     naturalAC = models.IntegerField(verbose_name='Natural AC Bonus', default=0)
-    dodgeAC = models.IntegerField(verbose_name='Dodge AC Bonus', default=0)
     Skills = models.ManyToManyField('Skill', default=None, through='CreatureSkill', blank=True)
     Senses = models.CharField(max_length=256, blank=True)
     CMDText = models.CharField(max_length=128, blank=True)
