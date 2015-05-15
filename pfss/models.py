@@ -72,6 +72,18 @@ class Feat(models.Model):
     def __unicode__(self):
         return self.name
 
+def duplicateGroup(id):
+    group = CreatureGroup.objects.get(id=id)
+    newGroup = CreatureGroup(name=('%s_duplicate'%group.name),Augmented=group.Augmented)
+    newGroup.save()
+    for item in group.AllowedExtraType.all():
+        newGroup.AllowedExtraType.add(item)
+    for item in group.DefaultExtraType.all():
+        newGroup.DefaultExtraType.add(item)
+
+    for item in group.groupentry_set.all():
+        GroupEntry(Group=newGroup, creature=item.creature).save()
+
 class GroupEntry(models.Model):
     Group = models.ForeignKey('CreatureGroup')
     creature = models.ForeignKey('Creature')
@@ -80,6 +92,8 @@ class GroupEntry(models.Model):
         return "%s (%s)%s" % (self.Group, self.creature, self.text)
 
 class CreatureGroup(models.Model):
+    class Meta:
+        ordering = ['name']
     name = models.CharField(max_length=128)
     AllowedExtraType = models.ManyToManyField('CreatureExtraType', blank=True, null=True)
     DefaultExtraType = models.ManyToManyField('CreatureExtraType', blank=True, null=True, related_name="DefaultCreatureExtraType_set")
@@ -211,6 +225,8 @@ class CreatureSkill(models.Model):
 
 
 class Attack(models.Model):
+    class Meta:
+        ordering = ['attackType','attackClass','name']
 
     ATTACK_CLASSES=((PRIMARY, 'Primary'), (SECONDARY, 'Secondary'), (LIGHT, 'Light'), (ONE_HANDED,'One Handed'), ('TWO_HANDED','Two Handed'))
     ATTACK_TYPES=((MELEE, 'Melee'), (RANGED, 'Ranged'), (SPECIAL, 'SPECIAL'))
@@ -243,11 +259,15 @@ class SpecialAbility(models.Model):
         if not self.dynamicText or not creature:
             return self.text
         else:
-            returnText = self.text
             returnText = self.text.replace( '{{CHA_POS}}', creature.ChaText(True) )
-            if returnText.find('{{CALC_CON_DC}}'):
+            returnText = returnText.replace( '{{STR_1.5}}', str(int(creature.StrMod*1.5)) )
+            if returnText.find('{{CALC_MELEE_AS_SOLE_DMG}}') != -1 :
+                returnText = returnText.replace('{{CALC_MELEE_AS_SOLE_DMG}}', creature.firstMeleeAttackDmg(AsSole=True))
+            if returnText.find('{{CALC_MELEE_DMG}}') != -1 :
+                returnText = returnText.replace('{{CALC_MELEE_DMG}}', creature.firstMeleeAttackDmg())
+            if returnText.find('{{CALC_CON_DC}}') != -1:
                 returnText = returnText.replace('{{CALC_CON_DC}}', str(10+(creature.HD/2)+creature.ConMod))
-            if returnText.find('{{CALC_STR_DC}}'):
+            if returnText.find('{{CALC_STR_DC}}') != -1:
                 returnText = returnText.replace('{{CALC_STR_DC}}', str(10+(creature.HD/2)+creature.StrMod))
             try:
                 STR_MOD = int(returnText.split('{{STR_MOD_')[1].split('}')[0])
@@ -305,6 +325,7 @@ class Creature(models.Model):
     CMBText = models.CharField(max_length=128, blank=True)
     OffenseText = models.TextField(blank=True)
     DefenseText = models.TextField(blank=True)
+    NoSummonTemplates = models.BooleanField(default=False)
     def CRValue(self): # will round fractions down, which is what I want for Pathfinder maths
         return self.CRnum/self.CRdenom
         #return fractions.Fraction(self.CRnum, self.CRdenom)
@@ -342,6 +363,8 @@ class Creature(models.Model):
         return self.baseSave(WILL)
     @property
     def baseFortSave(self):
+        if self.Feats.filter(name='Great Fortitude').count():
+            return 2 + self.baseSave(FORT)
         return self.baseSave(FORT)
     @property
     def baseRefSave(self):

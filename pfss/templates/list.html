@@ -34,24 +34,25 @@
     <div class="IB" style="width:100%;">
         <div class="IB" style="width:30%;"></div>
         <div class="IB right">
-            <div class="IB left pad"><input type="checkbox" {% if group %}checked{% endif %} id="include_all">Include</div>
-            <div class="IB left pad"><input type="checkbox" {% if group and group.Augmented %}checked{% endif %} id="augment_all">Augment Summons</div>
             {% for item in extraTypes %}
-            <div class="IB right pad"><input type="checkbox" {% if item in defaultTypes %}checked{% endif %} id="{{item.short}}_all">{{item.name}}</input></div>
+            <div class="IB left pad"><input type="checkbox" {% if item in defaultTypes %}checked{% endif %} id="{{item.short}}_all">{{item.name}}</input></div>
             {% endfor %}
+            <div class="IB right pad"><input type="checkbox" {% if group %}checked{% endif %} id="include_all">Include</div>
+            <div class="IB right pad"><input type="checkbox" {% if group and group.Augmented %}checked{% endif %} id="augment_all">Augment Summons</div>
         </div>
     </div>
 {% for creature in creatures %}
 <div class ="IB {% if forloop.counter|divisibleby:2 %}even{% else %} odd {% endif %}" style="width:100%;">
     <div class=IB style="width:30%;"><a href='/pfs/creature/{{creature.id}}/'>{{creature.name}}</a></div>
     <div class="IB right">
-        <div class="IB left pad"><input class="c_check" type="checkbox" {% if group %} checked {% endif %} name=creature_{{creature.id}}>Include</input></div>
+        {% if not creature.NoSummonTemplates %}
         {% for item in extraTypes %}
-        <div class="IB right pad"><input class="cb_{{item.short}}" type="checkbox" {% if item in defaultTypes %}checked{% endif %} name=modify_{{creature.id}}_{{item.short}}>{{item.name}}</input></div>
+        <div class="IB left pad"><input class="cb_{{item.short}}" type="checkbox" {% if item in defaultTypes %}checked{% endif %} name=modify_{{creature.id}}_{{item.short}}>{{item.name}}</input></div>
         {% endfor %}
+        {% endif %}
+        <div class="IB right pad"><input class="c_check" type="checkbox" {% if group %} checked {% endif %} name=creature_{{creature.id}}>Include</input></div>
         <div class="IB right pad"><input class="cb_augment" type="checkbox" {% if group and group.Augmented %}checked{% endif %} name=modify_{{creature.id}}_augment>Augment Summons</input></div>
         </div>
-
 </div>
 {% endfor %}
 </div>

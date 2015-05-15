@@ -17,7 +17,7 @@
   {{creature.extraTypesDefences|safe}}
   {{creature.base.DefenseText|safe}}
   {% if creature.base.Type.Immune %}
-  <div><b>Immune</b> {{creature.base.Type.Immune}}</div>
+  <div><b>Immune</b> {{creature.base.Type.Immune|safe}}</div>
   {% endif %}
   {% if creature.base.Type.Weaknesses %}
   <div><b>Weaknesses</b> {{creature.base.Type.Weaknesses}}</div>
@@ -50,10 +50,7 @@
 {% if creature.base.Languages.count %}
 <div>
 <b>Languages</b>
-{% for language in creature.base.Languages.all %}
-  {% if not forloop.first %}, {% endif %}
-  {{language}}
-{% endfor %}
+{% for language in creature.base.Languages.all %}{% if not forloop.first %}, {% endif %}{{language}}{% endfor %}
 </div>
 {% endif %}
 {% if creature.specials %}

@@ -3,6 +3,8 @@
 
 
 <ul class="nav navbar-nav pull-right">
+    {% comment %}
+    greg
     {% if request.user.is_authenticated %}
         <p class="navbar-text">
             <i class="fa fa-user"></i> {% user_display request.user %}
@@ -19,6 +21,7 @@
             <li><a href="{% url 'account_signup' %}">{% trans "Sign up" %}</a></li>
         {% endif %}
     {% endif %}
+    {% endcomment %}
 </ul>
 
 <form id="accountLogOutForm" style="display: none;" action="{% url 'account_logout' %}" method="POST">

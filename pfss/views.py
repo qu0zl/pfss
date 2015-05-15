@@ -63,10 +63,11 @@ class creatureInstance(object):
                 self.extraSensesText = "%s%s " % (self.extraSensesText, item.Senses)
     @property
     def SR(self):
-        # greg does this cause problems with base SR higher than would gain from template or
-        # does that never actually occur?
-        if True in map(lambda x: x.name=='Celestial' or x.name == 'Fiendish', self.extraTypes):
-            return str(self.CRValue + 5)
+        SRValue = 0 if not self.base.SR else int(self.base.SR)
+        if True in map(lambda x: x.name in ('Celestial','Fiendish','Entropic','Resolute'), self.extraTypes):
+            if (self.CRValue+5) > SRValue:
+                SRValue = self.CRValue + 5
+        return (str(SRValue) if SRValue else "")
     @property
     def CR(self): # needs to take CR increases from templates into account greg
         return self.base.CR()
@@ -180,24 +181,36 @@ class creatureInstance(object):
         attack = item.attack
         output = "%s%s%s%s %s (%s%s%s%s)" % (existingText,", " if (not first and not item.exclusive) else " or " if (not first and item.exclusive) else "", "%s x " % item.count if item.count > 1 else "", attack.name, self.toHit(attack), attack.dmg if item.attack.dCount else '', formatNumber(extraDmg, noZero=True) if item.attack.dCount else '', "/%s" % attack.crit if attack.crit else '', " %s" % item.extraText if item.extraText else '')
         return output
+    def meleeDmgBonus(self, attack, AsSole=False):
+        if self.StrMod < 0:
+            dmgMultiplier = 1
+        elif AsSole:
+            dmgMultiplier = 1.5
+        elif attack.attackClass==pfss.models.TWO_HANDED or ((self.melee.count()==1 and self.melee.get().count==1) and (attack.attackClass==pfss.models.PRIMARY or attack.attackClass==pfss.models.SECONDARY)):
+            dmgMultiplier = 1.5
+        elif attack.attackClass == pfss.models.SECONDARY:
+            dmgMultiplier = 0.5
+        else:
+            dmgMultiplier = 1
+        return (int(self.StrMod * dmgMultiplier))
     @property
     def meleeText(self):
         first = True
         output=""
         for item in self.melee:
             attack = item.attack
-            if self.StrMod < 0:
-                dmgMultiplier = 1
-            elif attack.attackClass==pfss.models.TWO_HANDED or ((self.melee.count()==1 and self.melee.get().count==1) and (attack.attackClass==pfss.models.PRIMARY or attack.attackClass==pfss.models.SECONDARY)):
-                dmgMultiplier = 1.5
-            elif attack.attackClass == pfss.models.SECONDARY:
-                dmgMultiplier = 0.5
-            else:
-                dmgMultiplier = 1
-            extraDmg = int(self.StrMod * dmgMultiplier)
+            extraDmg = self.meleeDmgBonus(attack)
             output = self.renderAttack(output, first, item, extraDmg)
             first=False
         return output
+    def firstMeleeAttackDmg(self, AsSole=False):
+        try:
+            item = self.melee[0]
+            attack = item.attack
+            extraDmg = self.meleeDmgBonus(attack, AsSole)
+            return u'%s%s' % (attack.dmg , formatNumber(extraDmg, noZero=True))
+        except IndexError:
+            return '?x? +?'
 
     @property
     def ranged(self):
