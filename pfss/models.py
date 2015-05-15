@@ -248,8 +248,11 @@ class Attack(models.Model):
 
 class SpecialAbility(models.Model):
     name = models.CharField(max_length=128)
+    short = models.CharField(max_length=128, blank=True)
     dynamicText = models.BooleanField(default=False)
     isAttack = models.BooleanField(default=True)
+    isDefense = models.BooleanField(default=False)
+    isGeneral = models.BooleanField(default=False)
     text = models.TextField(blank=True)
     def __unicode__(self):
         return self.name
@@ -319,6 +322,8 @@ class Creature(models.Model):
     HD = models.IntegerField(verbose_name='Hit-Dice', null=True) # Hit-dice
     armourAC = models.IntegerField(verbose_name='Armour Bonus', default=0)
     naturalAC = models.IntegerField(verbose_name='Natural AC Bonus', default=0)
+    extraACText = models.CharField(max_length=128, blank=True)
+    extraWillText = models.CharField(max_length=128, blank=True)
     Skills = models.ManyToManyField('Skill', default=None, through='CreatureSkill', blank=True)
     Senses = models.CharField(max_length=256, blank=True)
     CMDText = models.CharField(max_length=128, blank=True)

@@ -20,6 +20,9 @@
             clicker('.cb_{{item.short}}',$(this).prop('checked'));
         });
         {% endfor %}
+        $( "#slider" ).slider({ value:0.875, min:0.5, max:1.2, step: 0.005,
+            stop: function( event, ui ) { $('#slider_value').val(ui.value+"em");}
+        });
     });
     function toSubmit() {
         if ($('input.c_check:checked').length <= 0) {
@@ -32,7 +35,14 @@
 <form method="post" id="creature_list" action="/pfs/list/handle/" onsubmit="return toSubmit()"> {% csrf_token %}
 <div class="container-fluid">
     <div class="IB" style="width:100%;">
-        <div class="IB" style="width:30%;"></div>
+        <div class="IB" style="width:30%;">
+            <div class="IB"><button type="submit" style="display:block; white-space:nowrap">Generate</button></div>
+            <div class="IB" style="width:60%; border-style:dashed; border-width:1px; padding:5px; margin:2px;">
+                <div class="IB" style='padding-right:10px;'>Font Size</div>
+                <div class="IB"  id="slider" style="width:50%;"></div>
+            </div>
+            <div><input type="hidden" id="slider_value" name="font_size" value="0.875em"></div>
+        </div>
         <div class="IB right">
             {% for item in extraTypes %}
             <div class="IB left pad"><input type="checkbox" {% if item in defaultTypes %}checked{% endif %} id="{{item.short}}_all">{{item.name}}</input></div>

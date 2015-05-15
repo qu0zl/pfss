@@ -9,7 +9,7 @@ import pfss.models
 # augment summoning.
 # The created instance is then passed to a template for rendering.
 class creatureInstance(object):
-    def __init__(self, base, augment=False, celestial=False, fiendish=False, entropic=False, resolute=False):
+    def __init__(self, base, augment=False, celestial=False, fiendish=False, entropic=False, resolute=False, noSpecials=False):
         self.base = base
         self.augmented = augment
         for item in ("name","HD","Dex","Int","Wis","Cha","BAB","Speed","Size"):
@@ -24,7 +24,7 @@ class creatureInstance(object):
 
         self.initExtraTypes(celestial, fiendish, entropic, resolute)
         self.initExtraTypesText()
-        self.initSpecials()
+        self.initSpecials(noSpecials=noSpecials)
     def initExtraTypes(self, celestial, fiendish, entropic, resolute):
         self.extraTypes = []
         self.extraTypes.extend(self.base.ExtraType.all())
@@ -36,23 +36,40 @@ class creatureInstance(object):
             self.extraTypes.append(pfss.models.CreatureExtraType.objects.get(name='Entropic'))
         elif resolute:
             self.extraTypes.append(pfss.models.CreatureExtraType.objects.get(name='Resolute'))
-    def initSpecials(self):
+    def initSpecials(self, noSpecials=False):
         self.specialsReturn = []
         self.specialShort = ""
+        self.defenseShort = ""
+        self.generalShort = ""
         first = True
+        firstDefense = True
+        firstGeneral = True
         for item in self.base.Special.all():
-            if item.text:
+            if (not noSpecials) and item.text:
                 self.specialsReturn.append({'name':item.name, 'text':item.render(self)})
             if item.isAttack:
-                self.specialShort = "%s%s%s" % (self.specialShort, ", " if not first else "", item.name)
+                self.specialShort = "%s%s%s" % (self.specialShort, ", " if not first else "", item.name if not item.short else item.short)
                 first = False
+            elif item.isDefense:
+                self.defenseShort = "%s%s%s" % (self.defenseShort, ", " if not firstDefense else "", item.name if not item.short else item.short)
+                firstDefense = False
+            elif item.isGeneral:
+                self.generalShort = "%s%s%s" % (self.generalShort, ", " if not firstGeneral else "", item.name if not item.short else item.short)
+                firstGeneral = False
         for extraType in self.extraTypes:
             for item in extraType.Special.all():
-                if item.text:
+                if (not noSpecials) and item.text:
                     self.specialsReturn.append({'name':item.name, 'text':item.render(self)})
                 if item.isAttack:
-                    self.specialShort = "%s%s%s" % (self.specialShort, ", " if not first else "", item.name)
+                    self.specialShort = "%s%s%s" % (self.specialShort, ", " if not first else "", item.name if not item.short else item.short)
                     first = False
+                elif item.isDefense:
+                    self.defenseShort = "%s%s%s" % (self.defenseShort, ", " if not firstDefense else "", item.name if not item.short else item.short)
+                    firstDefense = False
+                elif item.isGeneral:
+                    self.generalShort = "%s%s%s" % (self.generalShort, ", " if not firstGeneral else "", item.name if not item.short else item.short)
+                    firstGeneral = False
+
     def initExtraTypesText(self):
         self.extraTypeDefencesText = ''
         self.extraSensesText =''
@@ -140,13 +157,14 @@ class creatureInstance(object):
         return (1 if self.base.Feats.filter(name='Dodge').count() else 0)
     @property
     def ACcomponents(self):
-        if self.base.armourAC or self.DexMod or self.base.naturalAC or self.dodgeAC or self.base.Size.ACbonus:
-            return "(%s%s%s%s%s)" % ( \
+        if self.base.armourAC or self.DexMod or self.base.naturalAC or self.dodgeAC or self.base.Size.ACbonus or self.base.extraACText:
+            return "(%s%s%s%s%s%s)" % ( \
                 ("%s Arm " % self.base.armourAC) if self.base.armourAC else "", \
                 ("%s Dex " % formatNumber(self.DexMod)) if self.DexMod else "", \
                 ("%s Nat " % formatNumber(self.base.naturalAC)) if self.base.naturalAC else "", \
                 ("+1 Dge " if self.dodgeAC else ""), \
-                ("%s Sze " % formatNumber(self.base.Size.ACbonus)) if self.base.Size.ACbonus else ""
+                ("%s Sze " % formatNumber(self.base.Size.ACbonus)) if self.base.Size.ACbonus else "", \
+                self.base.extraACText if self.base.extraACText else ''
                 )
         else:
             return ''
@@ -306,6 +324,8 @@ def creatureList(request, group_ID=None):
 
 def handleList(request):
     creatures = []
+
+    font_size = request.POST.get('font_size', '0.875em')
     for key in request.POST:
         if key.startswith('creature_'):
             #if key.startswith('creature_augment_'):
@@ -323,6 +343,7 @@ def handleList(request):
     return render_to_response('render.html', \
             {
                 'creatures':creatures,
+                'font_size':font_size
             }, \
             RequestContext(request))
 
@@ -333,7 +354,8 @@ def creatureView(request, cid):
     fiendish = bool(request.GET.get('infernal'))
     entropic = bool(request.GET.get('entropic'))
     resolute = bool(request.GET.get('resolute'))
-    creature = creatureInstance(pfss.models.Creature.objects.get(id=cid), augment=augment, celestial=celestial, fiendish=fiendish, entropic=entropic, resolute=resolute)
+    noSpecials = bool(request.GET.get('noSpecials'))
+    creature = creatureInstance(pfss.models.Creature.objects.get(id=cid), augment=augment, celestial=celestial, fiendish=fiendish, entropic=entropic, resolute=resolute, noSpecials=noSpecials)
 
     return render_to_response('creature_view.html', \
         {

@@ -1,16 +1,17 @@
-<div style="page-break-inside: avoid; font-size:0.875em; display:inline-block; border-style:solid; border-width:1px; padding:3px; margin:3px; width:45%;">
+<div class="render" style="page-break-inside: avoid; display:inline-block; border-style:solid; border-width:1px; padding:3px; margin:3px; width:48%;">
 <div id='header'>
     <div>
         <div class="IB"><b>{{creature.name}}</b></div>{% if creature.augmented %}<div class="IB right">(Augment Summons)</div>{% endif %}<div class ="IB right"><b>CR {{creature.CR}}</b></div>
   </div>
   <div>{{creature.alignment}} {{creature.base.Size}} {{creature.base.Type}} {{creature.base.extraTypes}}</div>
   <div><b>Init</b> {{creature.initiativeText}}; <b>Senses</b> {{creature.base.Senses}} {{creature.extraSensesText}}; {{creature.perception}}</div>
+  {% if creature.generalShort %}<div>{{ creature.generalShort|safe}}</div>{%endif%}
 </div>
 <div id='defense'>
 <h3>Defense</h3>
   <div><b>AC</b> {{creature.AC}}, touch {{creature.touchAC}}, flat-footed {{creature.flatFootedAC}} {{creature.ACcomponents}}</div>
   <div><b>HP</b> {{creature.HP}} {{creature.HPcomponents}}</div>
-  <div><b>Fort</b> {{creature.Fort}}, <b>Ref</b> {{creature.Ref}}, <b>Will</b> {{creature.Will}}</div>
+  <div><b>Fort</b> {{creature.Fort}}, <b>Ref</b> {{creature.Ref}}, <b>Will</b> {{creature.Will}}{{creature.base.extraWillText}}</div>
   {% if creature.SR %}
   <div><b>SR</b> {{creature.SR}}</div>
   {% endif %}
@@ -22,6 +23,7 @@
   {% if creature.base.Type.Weaknesses %}
   <div><b>Weaknesses</b> {{creature.base.Type.Weaknesses}}</div>
   {% endif %}
+  {% if creature.defenseShort %}<div>{{ creature.defenseShort|safe}}</div>{%endif%}
 </div>
 
 <div id='offense'>
@@ -33,8 +35,11 @@
   {% if creature.ranged%}
     <div><b>Ranged</b> {{creature.rangedText}}</div>
   {% endif %}
-  {% if creature.specialShort or creature.base.OffenseText %}
-  <div><b>Special Attacks</b> {{ creature.specialShort }} {% if creature.specialShort %}<br>{%endif%} {{creature.base.OffenseText|safe}}</div>
+  {% if creature.specialShort %}
+  <div><b>Special Attacks</b> {{ creature.specialShort|safe }}</div>
+  {% endif %}
+  {% if creature.base.OffenseText %}
+  <div>{{creature.base.OffenseText|safe}}</div>
   {% endif %}
 </div>
 
