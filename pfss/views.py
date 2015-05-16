@@ -183,16 +183,17 @@ class creatureInstance(object):
         mod = self.DexMod
         return self.BAB+mod+self.base.Size.ACbonus
     def toHit(self,item):
+        weaponFocus = 1 if self.base.Feats.filter(name='Weapon Focus (%s)'%item.name).count() else 0
         if item.attackType == pfss.models.MELEE:
             if item.attackClass == pfss.models.SECONDARY and (self.melee.count() > 1 or (self.melee.count()==1 and self.melee.get().count>1)): 
                 if self.base.Feats.filter(name='Multiattack').count():
-                    return formatNumber(self.meleeBonus-2)
+                    return formatNumber(self.meleeBonus-2+weaponFocus)
                 else:
-                    return formatNumber(self.meleeBonus-5)
+                    return formatNumber(self.meleeBonus-5+weaponFocus)
             else:
-                return formatNumber(self.meleeBonus)
+                return formatNumber(self.meleeBonus+weaponFocus)
         elif item.attackType == pfss.models.RANGED:
-            return formatNumber(self.rangedBonus)
+            return formatNumber(self.rangedBonus+weaponFocus)
         else:
             return 'Not yet implemented'
     def renderAttack(self, existingText, first, item, extraDmg):
@@ -293,6 +294,13 @@ class creatureInstance(object):
     @property
     def ChaMod(self):
         return (self.Cha - 10)/2
+
+def creatureListByCode(request, code):
+    try:
+        group = pfss.models.CreatureGroup.objects.filter(code=code)[0]
+    except IndexError:
+        return redirect('../../')
+    return creatureList(request, group_ID=group.id)
 
 def creatureList(request, group_ID=None):
     creatures = pfss.models.Creature.objects.all()

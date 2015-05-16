@@ -17,6 +17,7 @@ urlpatterns = patterns(
     url(r'^%slist/handle/$' % prefix, views.handleList),
     url(r'^%slist/$' % prefix, views.creatureList),
     url(r'^%slist/(?P<group_ID>\d+)/$' % prefix, views.creatureList),
+    url(r'^%slist/code/(?P<code>\w+)/$' % prefix, views.creatureListByCode),
     url(r'^%screature/(\d+)/$' % prefix, views.creatureView),
 )
 

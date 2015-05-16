@@ -95,6 +95,7 @@ class CreatureGroup(models.Model):
     class Meta:
         ordering = ['name']
     name = models.CharField(max_length=128)
+    code = models.CharField(max_length=16, blank=True)
     AllowedExtraType = models.ManyToManyField('CreatureExtraType', blank=True, null=True)
     DefaultExtraType = models.ManyToManyField('CreatureExtraType', blank=True, null=True, related_name="DefaultCreatureExtraType_set")
     Augmented = models.BooleanField(default=False)
@@ -365,6 +366,8 @@ class Creature(models.Model):
         return self.Type.BAB(self.HD)
     @property
     def baseWillSave(self):
+        if self.Feats.filter(name='Iron Will').count():
+            return 2 + self.baseSave(WILL)
         return self.baseSave(WILL)
     @property
     def baseFortSave(self):

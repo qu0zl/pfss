@@ -35,13 +35,13 @@
 <form method="post" id="creature_list" action="/pfs/list/handle/" onsubmit="return toSubmit()"> {% csrf_token %}
 <div class="container-fluid">
     <div class="IB" style="width:100%;">
-        <div class="IB" style="width:30%;">
+        <div class="IB">
             <div class="IB"><button type="submit" style="display:block; white-space:nowrap">Generate</button></div>
-            <div class="IB" style="width:60%; border-style:dashed; border-width:1px; padding:5px; margin:2px;">
-                <div class="IB" style='padding-right:10px;'>Font Size</div>
-                <div class="IB"  id="slider" style="width:50%;"></div>
+            <div class="IB" style="border-style:dashed; border-width:1px; padding:5px; margin:2px;">
+                <div class="IB">Font Size</div>
+                <div class="IB" id="slider" style="min-width:80px; max-width:150px;"></div>
             </div>
-            <div><input type="hidden" id="slider_value" name="font_size" value="0.875em"></div>
+            <div class="IB"><input type="hidden" id="slider_value" name="font_size" value="0.875em"></div>
         </div>
         <div class="IB right">
             {% for item in extraTypes %}
@@ -53,7 +53,7 @@
     </div>
 {% for creature in creatures %}
 <div class ="IB {% if forloop.counter|divisibleby:2 %}even{% else %} odd {% endif %}" style="width:100%;">
-    <div class=IB style="width:30%;"><a href='/pfs/creature/{{creature.id}}/'>{{creature.name}}</a></div>
+    <div class=IB><a href='/pfs/creature/{{creature.id}}/'>{{creature.name}}</a></div>
     <div class="IB right">
         {% if not creature.NoSummonTemplates %}
         {% for item in extraTypes %}

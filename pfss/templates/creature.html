@@ -1,10 +1,10 @@
-<div class="render" style="page-break-inside: avoid; display:inline-block; border-style:solid; border-width:1px; padding:3px; margin:3px; width:48%;">
+<div class="render" style="page-break-inside: avoid; display:inline-block; border-style:solid; border-width:1px; margin:3px; padding:3px; width:48%;">
 <div id='header'>
     <div>
         <div class="IB"><b>{{creature.name}}</b></div>{% if creature.augmented %}<div class="IB right">(Augment Summons)</div>{% endif %}<div class ="IB right"><b>CR {{creature.CR}}</b></div>
   </div>
   <div>{{creature.alignment}} {{creature.base.Size}} {{creature.base.Type}} {{creature.base.extraTypes}}</div>
-  <div><b>Init</b> {{creature.initiativeText}}; <b>Senses</b> {{creature.base.Senses}} {{creature.extraSensesText}}; {{creature.perception}}</div>
+  <div><b>Init</b> {{creature.initiativeText}}; <b>Senses</b> {{creature.base.Senses}}{%if creature.extraSensesText%} {{creature.extraSensesText}}{%endif%}; {{creature.perception}}</div>
   {% if creature.generalShort %}<div>{{ creature.generalShort|safe}}</div>{%endif%}
 </div>
 <div id='defense'>
@@ -45,7 +45,7 @@
 
 <div id='statistics'>
   <h3>Statistics</h3>
-  <div><b>Str</b> {{creature.Str}}, <b>Dex</b> {{creature.Dex}}, <b>Con</b> {{creature.Con}}, <b>Int</b> {{creature.Int}}, <b>Wis</b> {{creature.Wis}}, <b>Cha</b> {{creature.Cha}}</div>
+  <div><b>Str</b> {{creature.Str}}, <b>Dex</b> {{creature.Dex}}, <b>Con</b> {{creature.Con}}, <b>Int</b> {% if creature.Int == 0 %}-{% else %}{{creature.Int}}{%endif%}, <b>Wis</b> {{creature.Wis}}, <b>Cha</b> {{creature.Cha}}</div>
   <div><b>Base Atk</b> {{creature.BABtext}}, <b>CMB</b> {{creature.CMB}}{{creature.CMBText}}, <b>CMD</b> {{creature.CMD}}{{creature.CMDText}}</div>
   {% if creature.base.Feats.count %}
   <div><b>Feats </b>{% for feat in creature.base.Feats.all %}{% if not forloop.first %}, {% endif %}{{feat}}{% endfor %}</div>
