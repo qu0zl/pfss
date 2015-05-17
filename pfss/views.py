@@ -334,6 +334,18 @@ def handleList(request):
     creatures = []
 
     font_size = request.POST.get('font_size', '0.875em')
+    columns = int(request.POST.get('columns', '2'))
+    if columns == 1:
+        width = 100
+    elif columns == 2:
+        width = 48
+    elif columns == 3:
+        width = 32
+    elif columns == 4:
+        width = 23
+    else:
+        width = 92/columns
+        
     for key in request.POST:
         if key.startswith('creature_'):
             #if key.startswith('creature_augment_'):
@@ -351,7 +363,8 @@ def handleList(request):
     return render_to_response('render.html', \
             {
                 'creatures':creatures,
-                'font_size':font_size
+                'font_size':font_size,
+                'width':width
             }, \
             RequestContext(request))
 

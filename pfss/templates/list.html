@@ -23,6 +23,9 @@
         $( "#slider" ).slider({ value:0.875, min:0.5, max:1.2, step: 0.005,
             stop: function( event, ui ) { $('#slider_value').val(ui.value+"em");}
         });
+        $( "#sliderColumns" ).slider({ value:2, min:1, max:5, step: 1,
+            stop: function( event, ui ) { $('#sliderColumns_value').val(ui.value);}
+        });
     });
     function toSubmit() {
         if ($('input.c_check:checked').length <= 0) {
@@ -34,14 +37,19 @@
 </script>
 <form method="post" id="creature_list" action="/pfs/list/handle/" onsubmit="return toSubmit()"> {% csrf_token %}
 <div class="container-fluid">
+    <div><button type="submit" style="display:block; white-space:nowrap">Generate</button></div>
     <div class="IB" style="width:100%;">
         <div class="IB">
-            <div class="IB"><button type="submit" style="display:block; white-space:nowrap">Generate</button></div>
             <div class="IB" style="border-style:dashed; border-width:1px; padding:5px; margin:2px;">
                 <div class="IB">Font Size</div>
-                <div class="IB" id="slider" style="min-width:80px; max-width:150px;"></div>
+                <div class="IB" id="slider" style="min-width:100px; max-width:150px;"></div>
+            </div>
+            <div class="IB" style="border-style:dashed; border-width:1px; padding:5px; margin:2px;">
+                <div class="IB"># Columns</div>
+                <div class="IB" id="sliderColumns" style="min-width:100px; max-width:100px;"></div>
             </div>
             <div class="IB"><input type="hidden" id="slider_value" name="font_size" value="0.875em"></div>
+            <div class="IB"><input type="hidden" id="sliderColumns_value" name="columns" value="2"></div>
         </div>
         <div class="IB right">
             {% for item in extraTypes %}
