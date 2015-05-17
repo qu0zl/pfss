@@ -250,6 +250,7 @@ class Attack(models.Model):
 class SpecialAbility(models.Model):
     name = models.CharField(max_length=128)
     short = models.CharField(max_length=128, blank=True)
+    dynamicShortText = models.BooleanField(default=False)
     dynamicText = models.BooleanField(default=False)
     isAttack = models.BooleanField(default=True)
     isDefense = models.BooleanField(default=False)
@@ -257,35 +258,43 @@ class SpecialAbility(models.Model):
     text = models.TextField(blank=True)
     def __unicode__(self):
         return self.name
-    def render(self, creature=None):
+    def render (self, creature=None):
         if not self.text:
             return ''
         if not self.dynamicText or not creature:
             return self.text
-        else:
-            returnText = self.text.replace( '{{CHA_POS}}', creature.ChaText(True) )
-            returnText = returnText.replace( '{{STR_1.5}}', str(int(creature.StrMod*1.5)) )
-            if returnText.find('{{CALC_MELEE_AS_SOLE_DMG}}') != -1 :
-                returnText = returnText.replace('{{CALC_MELEE_AS_SOLE_DMG}}', creature.firstMeleeAttackDmg(AsSole=True))
-            if returnText.find('{{CALC_MELEE_DMG}}') != -1 :
-                returnText = returnText.replace('{{CALC_MELEE_DMG}}', creature.firstMeleeAttackDmg())
-            if returnText.find('{{CALC_CON_DC}}') != -1:
-                returnText = returnText.replace('{{CALC_CON_DC}}', str(10+(creature.HD/2)+creature.ConMod))
-            if returnText.find('{{CALC_STR_DC}}') != -1:
-                returnText = returnText.replace('{{CALC_STR_DC}}', str(10+(creature.HD/2)+creature.StrMod))
-            try:
-                STR_MOD = int(returnText.split('{{STR_MOD_')[1].split('}')[0])
-                STR_MOD += creature.StrMod
-                returnText = re.sub('{{STR_MOD_[0-9]*?}}', str(STR_MOD), returnText)
-            except IndexError:
-                pass
-            try:
-                CON_MOD = int(returnText.split('{{CON_MOD_')[1].split('}')[0])
-                CON_MOD += creature.ConMod
-                returnText = re.sub('{{CON_MOD_[0-9]*?}}', str(CON_MOD), returnText)
-            except IndexError:
-                pass
-            returnText = returnText.replace( '{{HD}}', str(creature.HD) )
+        return self.renderCore(text=self.text, creature=creature)
+        return self.name
+    def renderShort (self, creature=None):
+        if not self.short:
+            return ''
+        if not self.dynamicShortText or not creature:
+            return self.short
+        return self.renderCore(text=self.short, creature=creature)
+    def renderCore(self, text, creature=None):
+        returnText = text.replace( '{{CHA_POS}}', creature.ChaText(True) )
+        returnText = returnText.replace( '{{STR_1.5}}', str(int(creature.StrMod*1.5)) )
+        if returnText.find('{{CALC_MELEE_AS_SOLE_DMG}}') != -1 :
+            returnText = returnText.replace('{{CALC_MELEE_AS_SOLE_DMG}}', creature.firstMeleeAttackDmg(AsSole=True))
+        if returnText.find('{{CALC_MELEE_DMG}}') != -1 :
+            returnText = returnText.replace('{{CALC_MELEE_DMG}}', creature.firstMeleeAttackDmg())
+        if returnText.find('{{CALC_CON_DC}}') != -1:
+            returnText = returnText.replace('{{CALC_CON_DC}}', str(10+(creature.HD/2)+creature.ConMod))
+        if returnText.find('{{CALC_STR_DC}}') != -1:
+            returnText = returnText.replace('{{CALC_STR_DC}}', str(10+(creature.HD/2)+creature.StrMod))
+        try:
+            STR_MOD = int(returnText.split('{{STR_MOD_')[1].split('}')[0])
+            STR_MOD += creature.StrMod
+            returnText = re.sub('{{STR_MOD_[0-9]*?}}', str(STR_MOD), returnText)
+        except IndexError:
+            pass
+        try:
+            CON_MOD = int(returnText.split('{{CON_MOD_')[1].split('}')[0])
+            CON_MOD += creature.ConMod
+            returnText = re.sub('{{CON_MOD_[0-9]*?}}', str(CON_MOD), returnText)
+        except IndexError:
+            pass
+        returnText = returnText.replace( '{{HD}}', str(creature.HD) )
         return returnText
 
 class Size(models.Model):
