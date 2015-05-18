@@ -50,32 +50,40 @@ class creatureInstance(object):
             if (not noSpecials) and item.text:
                 self.specialsReturn.append({'name':item.name, 'text':item.render(self)})
             if item.isAttack:
-                self.specialShort = "%s%s%s" % (self.specialShort, ", " if not first else "", item.name if not item.renderShort(self) else item.renderShort(self))
+                rs = item.renderShort(self) or item.name
+                self.specialShort = "%s%s%s" % (self.specialShort, ", " if not first else "", rs)
                 first = False
             elif item.isDefense:
-                self.defenseShort = "%s%s%s" % (self.defenseShort, ", " if not firstDefense else "", item.name if not item.renderShort(self) else item.renderShort(self))
+                rs = item.renderShort(self) or item.name
+                self.defenseShort = "%s%s%s" % (self.defenseShort, ", " if not firstDefense else "", rs)
                 firstDefense = False
             elif item.isGeneral:
-                self.generalShort = "%s%s%s" % (self.generalShort, ", " if not firstGeneral else "", item.name if not item.renderShort(self) else item.renderShort(self))
+                rs = item.renderShort(self) or item.name
+                self.generalShort = "%s%s%s" % (self.generalShort, ", " if not firstGeneral else "", rs)
                 firstGeneral = False
             elif item.isStat:
-                self.statShort = "%s%s%s" % (self.statShort, ", " if not firstStat else "", item.name if not item.renderShort(self) else item.renderShort(self))
+                rs = item.renderShort(self) or item.name
+                self.statShort = "%s%s%s" % (self.statShort, ", " if not firstStat else "", rs)
                 firstStat = False
         for extraType in self.extraTypes:
             for item in extraType.Special.all():
                 if (not noSpecials) and item.text:
                     self.specialsReturn.append({'name':item.name, 'text':item.render(self)})
                 if item.isAttack:
-                    self.specialShort = "%s%s%s" % (self.specialShort, ", " if not first else "", item.name if not item.renderShort(self) else item.renderShort(self))
+                    rs = item.renderShort(self) or item.name
+                    self.specialShort = "%s%s%s" % (self.specialShort, ", " if not first else "", rs)
                     first = False
                 elif item.isDefense:
-                    self.defenseShort = "%s%s%s" % (self.defenseShort, ", " if not firstDefense else "", item.name if not item.renderShort(self) else item.renderShort(self))
+                    rs = item.renderShort(self) or item.name
+                    self.defenseShort = "%s%s%s" % (self.defenseShort, ", " if not firstDefense else "", rs)
                     firstDefense = False
                 elif item.isGeneral:
-                    self.generalShort = "%s%s%s" % (self.generalShort, ", " if not firstGeneral else "", item.name if not item.renderShort(self) else item.renderShort(self))
+                    rs = item.renderShort(self) or item.name
+                    self.generalShort = "%s%s%s" % (self.generalShort, ", " if not firstGeneral else "", rs)
                     firstGeneral = False
                 elif item.isStat:
-                    self.statShort = "%s%s%s" % (self.statShort, ", " if not firstStat else "", item.name if not item.renderShort(self) else item.renderShort(self))
+                    rs = item.renderShort(self) or item.name
+                    self.statShort = "%s%s%s" % (self.statShort, ", " if not firstStat else "", rs)
                     firstStat = False
 
     def initExtraTypesText(self):
