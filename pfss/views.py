@@ -336,15 +336,15 @@ def handleList(request):
     font_size = request.POST.get('font_size', '0.875em')
     columns = int(request.POST.get('columns', '2'))
     if columns == 1:
-        width = 100
+        width = "100%"
     elif columns == 2:
-        width = 48
+        width = "50%"
     elif columns == 3:
-        width = 32
+        width = "33.33%"
     elif columns == 4:
-        width = 23
+        width = "25%"
     else:
-        width = 92/columns
+        width = str(100.0/columns)+"%"
         
     for key in request.POST:
         if key.startswith('creature_'):
