@@ -277,6 +277,7 @@ class SpecialAbility(models.Model):
     def renderCore(self, text, creature=None):
         returnText = text.replace( '{{CHA_POS}}', creature.ChaText(True) )
         returnText = returnText.replace( '{{STR_1.5}}', str(int(creature.StrMod*1.5)) )
+        returnText = returnText.replace( '{{TO_HIT}}', str(creature.meleeBonus) )
         if returnText.find('{{CALC_MELEE_AS_SOLE_DMG}}') != -1 :
             returnText = returnText.replace('{{CALC_MELEE_AS_SOLE_DMG}}', creature.firstMeleeAttackDmg(AsSole=True))
         if returnText.find('{{CALC_MELEE_DMG}}') != -1 :
