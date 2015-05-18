@@ -1,4 +1,4 @@
-<div class="render" style="border-style:solid; border-width:1px;">
+<div class="render" style="border-style:solid; border-width:1px; padding-left:2px; padding-right:2px;">
 <div id='header'>
     <div>
         <div class="IB"><b>{{creature.name}}</b></div>{% if creature.augmented %}<div class="IB right">(Augment Summons)</div>{% endif %}<div class ="IB right"><b>CR {{creature.CR}}</b></div>
@@ -13,12 +13,12 @@
   <div><b>HP</b> {{creature.HP}} {{creature.HPcomponents}}</div>
   <div><b>Fort</b> {{creature.Fort}}, <b>Ref</b> {{creature.Ref}}, <b>Will</b> {{creature.Will}}{{creature.base.extraWillText}}</div>
   {% if creature.SR %}
-  <div><b>SR</b> {{creature.SR}}</div>
+  <div class="IB"><b>SR</b> {{creature.SR}} </div>
   {% endif %}
   {{creature.extraTypesDefences|safe}}
   {{creature.base.DefenseText|safe}}
   {% if creature.base.Type.Immune %}
-  <div><b>Immune</b> {{creature.base.Type.Immune|safe}}</div>
+  <div class="IB"><b>Immune</b> {{creature.base.Type.Immune|safe}} </div>
   {% endif %}
   {% if creature.base.Type.Weaknesses %}
   <div><b>Weaknesses</b> {{creature.base.Type.Weaknesses}}</div>
@@ -58,6 +58,7 @@
 {% for language in creature.base.Languages.all %}{% if not forloop.first %}, {% endif %}{{language}}{% endfor %}
 </div>
 {% endif %}
+{% if creature.statShort %}<div>{{ creature.statShort|safe}}</div>{%endif%}
 {% if creature.specials %}
 <div id='special'>
     <h3>Special Abilities</h3>

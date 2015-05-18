@@ -181,6 +181,7 @@ class CreatureAttack(models.Model):
     extraText = models.TextField(null=True, blank=True)
     count = models.IntegerField(default=1)
     exclusive = models.BooleanField(default=False)
+    makeSecondary = models.BooleanField(default=False)
     def __unicode__(self):
         if self.count > 1:
             return "%s (%s x %s)" % (self.creature, self.count, self.attack.__unicode__())
@@ -229,11 +230,12 @@ class Attack(models.Model):
     class Meta:
         ordering = ['attackType','attackClass','name']
 
-    ATTACK_CLASSES=((PRIMARY, 'Primary'), (SECONDARY, 'Secondary'), (LIGHT, 'Light'), (ONE_HANDED,'One Handed'), ('TWO_HANDED','Two Handed'))
+    ATTACK_CLASSES=((PRIMARY, 'Primary'), (SECONDARY, 'Secondary'), (LIGHT, 'Light'), (ONE_HANDED,'One Handed'), (TWO_HANDED,'Two Handed'))
     ATTACK_TYPES=((MELEE, 'Melee'), (RANGED, 'Ranged'), (SPECIAL, 'SPECIAL'))
     RANGED_STR_OPTIONS = ( (NO_STR, "Don't add Str"), (ADD_STR, "Add Str"), (NEG_STR_ONLY, "Add Str if negative") )
 
     name = models.CharField(max_length=64)
+    bonusToHit = models.IntegerField(default=0)
     crit = models.CharField(max_length=16, blank=True)
     dType = models.ForeignKey('Die', default=None)
     dCount = models.IntegerField(default=1)
@@ -255,6 +257,7 @@ class SpecialAbility(models.Model):
     isAttack = models.BooleanField(default=True)
     isDefense = models.BooleanField(default=False)
     isGeneral = models.BooleanField(default=False)
+    isStat = models.BooleanField(default=False)
     text = models.TextField(blank=True)
     def __unicode__(self):
         return self.name

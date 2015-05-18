@@ -41,9 +41,11 @@ class creatureInstance(object):
         self.specialShort = ""
         self.defenseShort = ""
         self.generalShort = ""
+        self.statShort = ""
         first = True
         firstDefense = True
         firstGeneral = True
+        firstStat = True
         for item in self.base.Special.all():
             if (not noSpecials) and item.text:
                 self.specialsReturn.append({'name':item.name, 'text':item.render(self)})
@@ -56,6 +58,9 @@ class creatureInstance(object):
             elif item.isGeneral:
                 self.generalShort = "%s%s%s" % (self.generalShort, ", " if not firstGeneral else "", item.name if not item.renderShort(self) else item.renderShort(self))
                 firstGeneral = False
+            elif item.isStat:
+                self.statShort = "%s%s%s" % (self.statShort, ", " if not firstStat else "", item.name if not item.renderShort(self) else item.renderShort(self))
+                firstStat = False
         for extraType in self.extraTypes:
             for item in extraType.Special.all():
                 if (not noSpecials) and item.text:
@@ -69,6 +74,9 @@ class creatureInstance(object):
                 elif item.isGeneral:
                     self.generalShort = "%s%s%s" % (self.generalShort, ", " if not firstGeneral else "", item.name if not item.renderShort(self) else item.renderShort(self))
                     firstGeneral = False
+                elif item.isStat:
+                    self.statShort = "%s%s%s" % (self.statShort, ", " if not firstStat else "", item.name if not item.renderShort(self) else item.renderShort(self))
+                    firstStat = False
 
     def initExtraTypesText(self):
         self.extraTypeDefencesText = ''
@@ -182,23 +190,31 @@ class creatureInstance(object):
     def rangedBonus(self):
         mod = self.DexMod
         return self.BAB+mod+self.base.Size.ACbonus
-    def toHit(self,item):
+    def toHit(self,creatureAttack):
+        item = creatureAttack.attack
         weaponFocus = 1 if self.base.Feats.filter(name='Weapon Focus (%s)'%item.name).count() else 0
+        weaponFocus += item.bonusToHit
         if item.attackType == pfss.models.MELEE:
-            if item.attackClass == pfss.models.SECONDARY and (self.melee.count() > 1 or (self.melee.count()==1 and self.melee.get().count>1)): 
+            if (item.attackClass == pfss.models.SECONDARY or creatureAttack.makeSecondary) and (self.melee.count() > 1 or (self.melee.count()==1 and self.melee.get().count>1)): 
                 if self.base.Feats.filter(name='Multiattack').count():
                     return formatNumber(self.meleeBonus-2+weaponFocus)
                 else:
                     return formatNumber(self.meleeBonus-5+weaponFocus)
             else:
-                return formatNumber(self.meleeBonus+weaponFocus)
+                returnText = "%s" % formatNumber(self.meleeBonus+weaponFocus)
+                if item.attackClass in (pfss.models.LIGHT, pfss.models.ONE_HANDED, pfss.models.TWO_HANDED):
+                    iterative = self.BAB - 5
+                    while iterative > 0:
+                        returnText= "%s/%s" % (returnText, (self.meleeBonus+weaponFocus+(iterative-self.BAB)))
+                        iterative -= 5
+                return returnText
         elif item.attackType == pfss.models.RANGED:
             return formatNumber(self.rangedBonus+weaponFocus)
         else:
             return 'Not yet implemented'
-    def renderAttack(self, existingText, first, item, extraDmg):
+    def renderAttack(self, existingText, first, item, extraDmg, exclusive=False):
         attack = item.attack
-        output = "%s%s%s%s %s (%s%s%s%s)" % (existingText,", " if (not first and not item.exclusive) else " or " if (not first and item.exclusive) else "", "%s x " % item.count if item.count > 1 else "", attack.name, self.toHit(attack), attack.dmg if item.attack.dCount else '', formatNumber(extraDmg, noZero=True) if item.attack.dCount else '', "/%s" % attack.crit if attack.crit else '', " %s" % item.extraText if item.extraText else '')
+        output = "%s%s%s%s %s (%s%s%s%s)" % (existingText,", " if (not first and item.exclusive==exclusive) else " or " if (not first and item.exclusive != exclusive) else "", "%s x " % item.count if item.count > 1 else "", attack.name, self.toHit(item), attack.dmg if item.attack.dCount else '', formatNumber(extraDmg, noZero=True) if item.attack.dCount else '', "/%s" % attack.crit if attack.crit else '', " %s" % item.extraText if item.extraText else '')
         return output
     def meleeDmgBonus(self, attack, AsSole=False):
         if self.StrMod < 0:
@@ -215,11 +231,13 @@ class creatureInstance(object):
     @property
     def meleeText(self):
         first = True
+        exclusive = False
         output=""
         for item in self.melee:
             attack = item.attack
             extraDmg = self.meleeDmgBonus(attack)
-            output = self.renderAttack(output, first, item, extraDmg)
+            output = self.renderAttack(output, first, item, extraDmg, exclusive)
+            exclusive = item.exclusive
             first=False
         return output
     def firstMeleeAttackDmg(self, AsSole=False):
