@@ -124,7 +124,6 @@ class CreatureExtraType(models.Model):
         return self.name.lower()
     def RenderDefense(self, instance):
         HD = instance.HD
-        # greg need to calculate DR by HD also
         returnText = self.Defense.replace( '{{RES_BY_HD}}', str( 5 if HD <= 4 else 10 if HD <= 10 else 15))
         if returnText.find('{{DR_BY_HD}}'):
             DR = 0 if HD <=4 else 5 if HD <= 10 else 10
@@ -175,7 +174,7 @@ class Skill(models.Model):
 
 class CreatureAttack(models.Model):
     class Meta:
-        ordering = ['creature','exclusive']
+        ordering = ['creature','exclusive', 'attack__attackClass']
     attack = models.ForeignKey('Attack')
     creature = models.ForeignKey('Creature')
     extraText = models.TextField(null=True, blank=True)

@@ -21,9 +21,9 @@
   <div class="IB"><b>Immune</b> {{creature.base.Type.Immune|safe}} </div>
   {% endif %}
   {% if creature.base.Type.Weaknesses %}
-  <div><b>Weaknesses</b> {{creature.base.Type.Weaknesses}}</div>
+  <div class="IB"><b>Weaknesses</b> {{creature.base.Type.Weaknesses}}</div>
   {% endif %}
-  {% if creature.defenseShort %}<div><b>Defensive Abilities</b> {{ creature.defenseShort|safe}}</div>{%endif%}
+  {% if creature.defenseShort %}<div class="IB"><b>Defensive Abilities</b> {{ creature.defenseShort|safe}}</div>{%endif%}
 </div>
 
 <div id='offense'>

@@ -28,14 +28,17 @@ class creatureInstance(object):
     def initExtraTypes(self, celestial, fiendish, entropic, resolute):
         self.extraTypes = []
         self.extraTypes.extend(self.base.ExtraType.all())
+        def appendUnique(self, newType):
+            if newType not in self.extraTypes:
+                self.extraTypes.append(newType)
         if celestial:
-            self.extraTypes.append(pfss.models.CreatureExtraType.objects.get(name='Celestial'))
+            appendUnique(self, pfss.models.CreatureExtraType.objects.get(name='Celestial'))
         elif fiendish:
-            self.extraTypes.append(pfss.models.CreatureExtraType.objects.get(name='Fiendish'))
+            appendUnique(pfss.models.CreatureExtraType.objects.get(name='Fiendish'))
         elif entropic:
-            self.extraTypes.append(pfss.models.CreatureExtraType.objects.get(name='Entropic'))
+            appendUnique(pfss.models.CreatureExtraType.objects.get(name='Entropic'))
         elif resolute:
-            self.extraTypes.append(pfss.models.CreatureExtraType.objects.get(name='Resolute'))
+            appendUnique(pfss.models.CreatureExtraType.objects.get(name='Resolute'))
     def initSpecials(self, noSpecials=False):
         self.specialsReturn = []
         self.specialShort = ""
@@ -87,13 +90,17 @@ class creatureInstance(object):
                     firstStat = False
 
     def initExtraTypesText(self):
+        DV_STRING='darkvision 60 ft.'
         self.extraTypeDefencesText = ''
         self.extraSensesText =''
         for item in self.extraTypes:
             if item.Defense:
                 self.extraTypeDefencesText = "%s%s " % (self.extraTypeDefencesText, item.RenderDefense(self))
             if item.Senses:
-                self.extraSensesText = "%s%s " % (self.extraSensesText, item.Senses)
+                if self.base.Senses.find(DV_STRING) != -1 and item.Senses.find(DV_STRING) != -1:
+                    self.extraSensesText = "%s%s " % (self.extraSensesText, item.Senses.replace(DV_STRING,''))
+                else:
+                    self.extraSensesText = "%s%s " % (self.extraSensesText, item.Senses)
     @property
     def SR(self):
         SRValue = 0 if not self.base.SR else int(self.base.SR)
