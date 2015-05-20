@@ -35,6 +35,9 @@
   {% if creature.ranged%}
     <div><b>Ranged</b> {{creature.rangedText}}</div>
   {% endif %}
+  {% if creature.base.Space %}
+  <div>{{creature.base.Space|safe}}</div>
+  {% endif %}
   {% if creature.specialShort %}
   <div><b>Special Attacks</b> {{ creature.specialShort|safe }}</div>
   {% endif %}

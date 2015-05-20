@@ -323,6 +323,7 @@ class Creature(models.Model):
     CRdenom = models.IntegerField(default=1)
     #Speed = models.IntegerField(choices=map( lambda x: (x,str(x)), range(5,300,5)), default=30)
     Speed = models.CharField(max_length=256, blank=True)
+    Space = models.CharField(max_length=256, blank=True)
     Attacks = models.ManyToManyField('Attack', blank=True, null=True, through='CreatureAttack')
     Languages = models.ManyToManyField('Language', blank=True, null=True)
     Feats = models.ManyToManyField('Feat', blank=True, null=True)
