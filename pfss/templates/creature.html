@@ -23,7 +23,7 @@
   {% if creature.base.Type.Weaknesses %}
   <div><b>Weaknesses</b> {{creature.base.Type.Weaknesses}}</div>
   {% endif %}
-  {% if creature.defenseShort %}<div>{{ creature.defenseShort|safe}}</div>{%endif%}
+  {% if creature.defenseShort %}<div><b>Defensive Abilities</b> {{ creature.defenseShort|safe}}</div>{%endif%}
 </div>
 
 <div id='offense'>
@@ -58,7 +58,7 @@
 {% for language in creature.base.Languages.all %}{% if not forloop.first %}, {% endif %}{{language}}{% endfor %}
 </div>
 {% endif %}
-{% if creature.statShort %}<div>{{ creature.statShort|safe}}</div>{%endif%}
+{% if creature.statShort %}<div><b>SQ</b> {{ creature.statShort|safe}}</div>{%endif%}
 {% if creature.specials %}
 <div id='special'>
     <h3>Special Abilities</h3>

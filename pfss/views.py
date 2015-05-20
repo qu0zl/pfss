@@ -128,7 +128,7 @@ class creatureInstance(object):
         return None
     @property
     def CMBValue(self):
-        if (self.base.Size.ACbonus>=2): # Tiny or smaller
+        if (self.base.Size.ACbonus>=2) or self.base.Feats.filter(name='Agile Maneuvers').count(): # Tiny or smaller
             statMod = self.DexMod
         else:
             statMod = self.StrMod
@@ -288,14 +288,20 @@ class creatureInstance(object):
     def initiativeText(self):
         return formatNumber(self.initiative)
     @property
+    def MiscMod(self):
+        miscMod = 0
+        if self.base.Special.filter(name="Cat's Luck (Su)").count():
+            miscMod = self.ChaMod if self.ChaMod > 0 else 0
+        return miscMod
+    @property
     def Will(self):
-        return formatNumber(self.WisMod+self.base.baseWillSave)
+        return formatNumber(self.WisMod+self.base.baseWillSave+self.MiscMod)
     @property
     def Ref(self):
-        return formatNumber(self.DexMod+self.base.baseRefSave)
+        return formatNumber(self.DexMod+self.base.baseRefSave+self.MiscMod)
     @property
     def Fort(self):
-        return formatNumber(self.ConMod+self.base.baseFortSave)
+        return formatNumber(self.ConMod+self.base.baseFortSave+self.MiscMod)
     def ChaText(self,ifPositive=False):
         charisma = self.ChaMod
         if (ifPositive and charisma < 0):
