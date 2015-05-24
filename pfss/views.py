@@ -34,11 +34,11 @@ class creatureInstance(object):
         if celestial:
             appendUnique(self, pfss.models.CreatureExtraType.objects.get(name='Celestial'))
         elif fiendish:
-            appendUnique(pfss.models.CreatureExtraType.objects.get(name='Fiendish'))
+            appendUnique(self, pfss.models.CreatureExtraType.objects.get(name='Fiendish'))
         elif entropic:
-            appendUnique(pfss.models.CreatureExtraType.objects.get(name='Entropic'))
+            appendUnique(self, pfss.models.CreatureExtraType.objects.get(name='Entropic'))
         elif resolute:
-            appendUnique(pfss.models.CreatureExtraType.objects.get(name='Resolute'))
+            appendUnique(self, pfss.models.CreatureExtraType.objects.get(name='Resolute'))
     def initSpecials(self, noSpecials=False):
         self.specialsReturn = []
         self.specialShort = ""
