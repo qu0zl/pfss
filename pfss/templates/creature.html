@@ -10,23 +10,21 @@
 <div id='defense'>
 <h3>Defense</h3>
   <div><b>AC</b> {{creature.AC}}, touch {{creature.touchAC}}, flat-footed {{creature.flatFootedAC}} {{creature.ACcomponents}}</div>
-  <div><b>HP</b> {{creature.HP}} {{creature.HPcomponents}}</div>
+  <div><b>HP</b> {{creature.HP}} {{creature.HPcomponents}}{%if creature.base.extraHPText%}; {{creature.base.extraHPText}}{%endif%}</div>
   <div><b>Fort</b> {{creature.Fort}}, <b>Ref</b> {{creature.Ref}}, <b>Will</b> {{creature.Will}}{{creature.base.extraWillText}}</div>
   {%spaceless%}
   {% if creature.SR or creature.extraTypesDefences or creature.base.DefenseText or creature.base.Type.Immune or creature.base.Type.Weaknesses or creature.defenseShort %}
   <div class="IB">
-  {% if creature.SR %}
-  <b>SR</b> {{creature.SR}}
-  {% endif %}
+  {% if creature.defenseShort %}<b>Defensive Abilities</b> {{ creature.defenseShort|safe}}{%endif%}
   {{creature.extraTypesDefences|safe}}
   {{creature.base.DefenseText|safe}}
+  {% if creature.SR %}<b>SR</b> {{creature.SR}}{% endif %}
   {% if creature.base.Type.Immune %}
   <b>Immune</b> {{creature.base.Type.Immune|safe}}
   {% endif %}
   {% if creature.base.Type.Weaknesses %}
   <b>Weaknesses</b> {{creature.base.Type.Weaknesses}}
   {% endif %}
-  {% if creature.defenseShort %}<b>Defensive Abilities</b> {{ creature.defenseShort|safe}}{%endif%}
   </div>
   {% endif %}
   {%endspaceless%}
