@@ -194,6 +194,8 @@ class creatureInstance(object):
     @property
     def melee(self):
         return self.base.creatureattack_set.filter(attack__attackType=pfss.models.MELEE)
+    def meleeByExclusive(self, exclusive):
+        return self.melee.filter(exclusive=exclusive)
     @property
     def meleeBonus(self):
         mod = self.StrMod
@@ -220,37 +222,42 @@ class creatureInstance(object):
                 if item.attackClass in (pfss.models.LIGHT, pfss.models.ONE_HANDED, pfss.models.TWO_HANDED):
                     iterative = self.BAB - 5
                     while iterative > 0:
-                        returnText= "%s/%s" % (returnText, (self.meleeBonus+weaponFocus+(iterative-self.BAB)))
+                        returnText= "%s/+%s" % (returnText, (self.meleeBonus+weaponFocus+(iterative-self.BAB)))
                         iterative -= 5
                 return returnText
         elif item.attackType == pfss.models.RANGED:
-            return formatNumber(self.rangedBonus+weaponFocus)
+            returnText = "%s" % formatNumber(self.rangedBonus+weaponFocus)
+            iterative = self.BAB - 5
+            while iterative > 0:
+                returnText= "%s/+%s" % (returnText, (self.rangedBonus+weaponFocus+(iterative-self.BAB)))
+                iterative -= 5
+            return returnText
         else:
             return 'Not yet implemented'
     def renderAttack(self, existingText, first, item, extraDmg, exclusive=False):
         attack = item.attack
         output = "%s%s%s%s %s (%s%s%s%s)" % (existingText,", " if (not first and item.exclusive==exclusive) else " or " if (not first and item.exclusive != exclusive) else "", "%s x " % item.count if item.count > 1 else "", attack.name, self.toHit(item), attack.dmg if item.attack.dCount else '', formatNumber(extraDmg, noZero=True) if item.attack.dCount else '', "/%s" % attack.crit if attack.crit else '', " %s" % item.extraText if item.extraText else '')
         return output
-    def meleeDmgBonus(self, attack, AsSole=False):
+    def meleeDmgBonus(self, item, AsSole=False):
+        attack = item.attack
         if self.StrMod < 0:
             dmgMultiplier = 1
         elif AsSole:
             dmgMultiplier = 1.5
-        elif attack.attackClass==pfss.models.TWO_HANDED or ((self.melee.count()==1 and self.melee.get().count==1) and (attack.attackClass==pfss.models.PRIMARY or attack.attackClass==pfss.models.SECONDARY)):
+        elif attack.attackClass==pfss.models.TWO_HANDED or ((self.meleeByExclusive(item.exclusive).count()==1 and self.meleeByExclusive(item.exclusive).get().count==1) and (attack.attackClass==pfss.models.PRIMARY or attack.attackClass==pfss.models.SECONDARY)):
             dmgMultiplier = 1.5
         elif attack.attackClass == pfss.models.SECONDARY:
             dmgMultiplier = 0.5
         else:
             dmgMultiplier = 1
-        return (int(self.StrMod * dmgMultiplier))
+        return (int(self.StrMod * dmgMultiplier)+attack.bonusToDmg)
     @property
     def meleeText(self):
         first = True
         exclusive = False
         output=""
         for item in self.melee:
-            attack = item.attack
-            extraDmg = self.meleeDmgBonus(attack)
+            extraDmg = self.meleeDmgBonus(item)
             output = self.renderAttack(output, first, item, extraDmg, exclusive)
             exclusive = item.exclusive
             first=False
@@ -258,9 +265,8 @@ class creatureInstance(object):
     def firstMeleeAttackDmg(self, AsSole=False):
         try:
             item = self.melee[0]
-            attack = item.attack
-            extraDmg = self.meleeDmgBonus(attack, AsSole)
-            return u'%s%s' % (attack.dmg , formatNumber(extraDmg, noZero=True))
+            extraDmg = self.meleeDmgBonus(item, AsSole)
+            return u'%s%s' % (item.attack.dmg , formatNumber(extraDmg, noZero=True))
         except IndexError:
             return '?x? +?'
 
@@ -277,6 +283,7 @@ class creatureInstance(object):
                 extraDmg = self.StrMod
             else:
                 extraDmg = 0
+            extraDmg += attack.bonusToDmg
 
             output = self.renderAttack(output, first, item, extraDmg)
             first = False

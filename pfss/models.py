@@ -235,6 +235,7 @@ class Attack(models.Model):
 
     name = models.CharField(max_length=64)
     bonusToHit = models.IntegerField(default=0)
+    bonusToDmg = models.IntegerField(default=0)
     crit = models.CharField(max_length=16, blank=True)
     dType = models.ForeignKey('Die', default=None)
     dCount = models.IntegerField(default=1)
@@ -276,6 +277,7 @@ class SpecialAbility(models.Model):
     def renderCore(self, text, creature=None):
         returnText = text.replace( '{{CHA_POS}}', creature.ChaText(True) )
         returnText = returnText.replace( '{{STR_1.5}}', str(int(creature.StrMod*1.5)) )
+        returnText = returnText.replace( '{{STR_0.5}}', str(int(creature.StrMod*0.5)) )
         returnText = returnText.replace( '{{TO_HIT}}', str(creature.meleeBonus) )
         if returnText.find('{{CALC_MELEE_AS_SOLE_DMG}}') != -1 :
             returnText = returnText.replace('{{CALC_MELEE_AS_SOLE_DMG}}', creature.firstMeleeAttackDmg(AsSole=True))
@@ -336,6 +338,7 @@ class Creature(models.Model):
     HD = models.IntegerField(verbose_name='Hit-Dice', null=True) # Hit-dice
     armourAC = models.IntegerField(verbose_name='Armour Bonus', default=0)
     naturalAC = models.IntegerField(verbose_name='Natural AC Bonus', default=0)
+    extraHPText = models.CharField(max_length=128, blank=True)
     extraACText = models.CharField(max_length=128, blank=True)
     extraWillText = models.CharField(max_length=128, blank=True)
     Skills = models.ManyToManyField('Skill', default=None, through='CreatureSkill', blank=True)
