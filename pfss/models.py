@@ -179,6 +179,8 @@ class CreatureAttack(models.Model):
     creature = models.ForeignKey('Creature')
     extraText = models.TextField(null=True, blank=True)
     count = models.IntegerField(default=1)
+    extraAttackAtFullBAB = models.BooleanField(default=False)
+    noIterative = models.BooleanField(default=False)
     exclusive = models.BooleanField(default=False)
     makeSecondary = models.BooleanField(default=False)
     def __unicode__(self):
@@ -337,6 +339,7 @@ class Creature(models.Model):
     ExtraType = models.ManyToManyField('CreatureExtraType', default=None, blank=True, null=True)
     HD = models.IntegerField(verbose_name='Hit-Dice', null=True) # Hit-dice
     armourAC = models.IntegerField(verbose_name='Armour Bonus', default=0)
+    shieldAC = models.IntegerField(verbose_name='Shield AC Bonus', default=0)
     naturalAC = models.IntegerField(verbose_name='Natural AC Bonus', default=0)
     extraHPText = models.CharField(max_length=128, blank=True)
     extraACText = models.CharField(max_length=128, blank=True)
