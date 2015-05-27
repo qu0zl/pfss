@@ -180,6 +180,7 @@ class CreatureAttack(models.Model):
     exclusive = models.BooleanField(default=False)
     makeSecondary = models.BooleanField(default=False)
     wield2Handed = models.BooleanField(default=False)
+    touchAttack = models.BooleanField(default=False)
     def __unicode__(self):
         if self.count > 1:
             return "%s (%s x %s)" % (self.creature, self.count, self.attack.__unicode__())

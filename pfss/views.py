@@ -247,7 +247,7 @@ class creatureInstance(object):
             return 'Not yet implemented'
     def renderAttack(self, existingText, first, item, extraDmg, exclusive=False):
         attack = item.attack
-        output = "%s%s%s%s %s (%s%s%s%s)" % (existingText,", " if (not first and item.exclusive==exclusive) else " or " if (not first and item.exclusive != exclusive) else "", "%s x " % item.count if item.count > 1 else "", attack.name, self.toHit(item), attack.dmg if item.attack.dCount else '', formatNumber(extraDmg, noZero=True) if item.attack.dCount else '', "/%s" % attack.crit if attack.crit else '', "%s" % ("%s%s" %(' ' if item.attack.dCount else '', item.extraText)) if item.extraText else '')
+        output = "%s%s%s%s %s%s (%s%s%s%s)" % (existingText,", " if (not first and item.exclusive==exclusive) else " or " if (not first and item.exclusive != exclusive) else "", "%s x " % item.count if item.count > 1 else "", attack.name, self.toHit(item), ' touch' if item.touchAttack else '', attack.dmg if item.attack.dCount else '', formatNumber(extraDmg, noZero=True) if item.attack.dCount else '', "/%s" % attack.crit if attack.crit else '', "%s" % ("%s%s" %(' ' if item.attack.dCount else '', item.extraText)) if item.extraText else '')
         return output
     def meleeDmgBonus(self, item, AsSole=False):
         attack = item.attack
