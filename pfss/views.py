@@ -168,22 +168,23 @@ class creatureInstance(object):
         return int(((self.base.HDtype.half)+self.ConMod)*self.HD)+self.toughness
     @property
     def AC(self):
-        return 10+self.DexMod+self.base.armourAC+self.base.Size.ACbonus+self.base.naturalAC+self.base.shieldAC+(1 if self.base.Feats.filter(name='Dodge').count() else 0)
+        return 10+self.DexMod+self.base.armourAC+self.base.Size.ACbonus+self.base.naturalAC+self.base.deflectAC+self.base.shieldAC+(1 if self.base.Feats.filter(name='Dodge').count() else 0)
     @property
     def touchAC(self):
-        return 10+self.DexMod+self.base.Size.ACbonus+self.dodgeAC
+        return 10+self.DexMod+self.base.Size.ACbonus+self.dodgeAC+self.base.deflectAC
     @property
     def flatFootedAC(self):
-        return 10+self.base.Size.ACbonus+self.base.naturalAC+self.base.shieldAC+self.base.armourAC + (self.DexMod if self.DexMod<0 else 0)
+        return 10+self.base.Size.ACbonus+self.base.naturalAC+self.base.deflectAC+self.base.shieldAC+self.base.armourAC + (self.DexMod if self.DexMod<0 else 0)
     @property
     def dodgeAC(self):
         return (1 if self.base.Feats.filter(name='Dodge').count() else 0)
     @property
     def ACcomponents(self):
-        if self.base.armourAC or self.DexMod or self.base.naturalAC or self.base.shieldAC or self.dodgeAC or self.base.Size.ACbonus or self.base.extraACText:
-            return "(%s%s%s%s%s%s%s)" % ( \
+        if self.base.armourAC or self.DexMod or self.base.naturalAC or self.base.deflectAC or self.base.shieldAC or self.dodgeAC or self.base.Size.ACbonus or self.base.extraACText:
+            return "(%s%s%s%s%s%s%s%s)" % ( \
                 ("%s Arm " % formatNumber(self.base.armourAC)) if self.base.armourAC else "", \
                 ("%s Shd " % formatNumber(self.base.shieldAC)) if self.base.shieldAC else "", \
+                ("%s deflection " % formatNumber(self.base.deflectAC)) if self.base.deflectAC else "", \
                 ("%s Dex " % formatNumber(self.DexMod)) if self.DexMod else "", \
                 ("%s Nat " % formatNumber(self.base.naturalAC)) if self.base.naturalAC else "", \
                 ("+1 Dge " if self.dodgeAC else ""), \
@@ -229,24 +230,30 @@ class creatureInstance(object):
                         returnText = "+%s/%s" % (self.meleeBonus+weaponFocus,returnText)
                 return returnText
         elif item.attackType == pfss.models.RANGED:
-            returnText = "%s" % formatNumber(self.rangedBonus+weaponFocus)
+            if creatureAttack.extraAttackAtFullBAB and self.base.Feats.filter(name='Rapid Shot').count():
+                rapidShot = -2
+            else:
+                rapidShot = 0
+            returnText = "%s" % formatNumber(self.rangedBonus+weaponFocus+rapidShot)
             if creatureAttack.noIterative == False:
                 iterative = self.BAB - 5
                 while iterative > 0:
-                    returnText= "%s/+%s" % (returnText, (self.rangedBonus+weaponFocus+(iterative-self.BAB)))
+                    returnText= "%s/+%s" % (returnText, (self.rangedBonus+weaponFocus+rapidShot+(iterative-self.BAB)))
                     iterative -= 5
+                if creatureAttack.extraAttackAtFullBAB:
+                    returnText = "+%s/%s" % (self.rangedBonus+weaponFocus+rapidShot,returnText)
             return returnText
         else:
             return 'Not yet implemented'
     def renderAttack(self, existingText, first, item, extraDmg, exclusive=False):
         attack = item.attack
-        output = "%s%s%s%s %s (%s%s%s%s)" % (existingText,", " if (not first and item.exclusive==exclusive) else " or " if (not first and item.exclusive != exclusive) else "", "%s x " % item.count if item.count > 1 else "", attack.name, self.toHit(item), attack.dmg if item.attack.dCount else '', formatNumber(extraDmg, noZero=True) if item.attack.dCount else '', "/%s" % attack.crit if attack.crit else '', " %s" % item.extraText if item.extraText else '')
+        output = "%s%s%s%s %s (%s%s%s%s)" % (existingText,", " if (not first and item.exclusive==exclusive) else " or " if (not first and item.exclusive != exclusive) else "", "%s x " % item.count if item.count > 1 else "", attack.name, self.toHit(item), attack.dmg if item.attack.dCount else '', formatNumber(extraDmg, noZero=True) if item.attack.dCount else '', "/%s" % attack.crit if attack.crit else '', "%s" % ("%s%s" %(' ' if item.attack.dCount else '', item.extraText)) if item.extraText else '')
         return output
     def meleeDmgBonus(self, item, AsSole=False):
         attack = item.attack
         if self.StrMod < 0:
             dmgMultiplier = 1
-        elif AsSole:
+        elif AsSole or item.wield2Handed:
             dmgMultiplier = 1.5
         elif attack.attackClass==pfss.models.TWO_HANDED or ((self.meleeByExclusive(item.exclusive).count()==1 and self.meleeByExclusive(item.exclusive).get().count==1) and (attack.attackClass==pfss.models.PRIMARY or attack.attackClass==pfss.models.SECONDARY)):
             dmgMultiplier = 1.5
@@ -266,9 +273,11 @@ class creatureInstance(object):
             exclusive = item.exclusive
             first=False
         return output
-    def firstMeleeAttackDmg(self, AsSole=False):
+    def firstMeleeAttackDmg(self, AsSole=False, baseOnly=False):
         try:
             item = self.melee[0]
+            if baseOnly:
+                return u'%s' % item.attack.dmg
             extraDmg = self.meleeDmgBonus(item, AsSole)
             return u'%s%s' % (item.attack.dmg , formatNumber(extraDmg, noZero=True))
         except IndexError:
