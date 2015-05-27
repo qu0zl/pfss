@@ -3,10 +3,6 @@ from django import forms
 from django.forms.models import modelformset_factory
 from django.contrib.auth.models import User
 import re
-#import fractions
-
-# greg could be useful
-#User.profile = property(lambda u: profiles.models.Profile.objects.get_or_create(user=u)[0])
 
 MELEE=0
 RANGED=1
@@ -183,6 +179,7 @@ class CreatureAttack(models.Model):
     noIterative = models.BooleanField(default=False)
     exclusive = models.BooleanField(default=False)
     makeSecondary = models.BooleanField(default=False)
+    wield2Handed = models.BooleanField(default=False)
     def __unicode__(self):
         if self.count > 1:
             return "%s (%s x %s)" % (self.creature, self.count, self.attack.__unicode__())
@@ -283,6 +280,8 @@ class SpecialAbility(models.Model):
         returnText = returnText.replace( '{{TO_HIT}}', str(creature.meleeBonus) )
         if returnText.find('{{CALC_MELEE_AS_SOLE_DMG}}') != -1 :
             returnText = returnText.replace('{{CALC_MELEE_AS_SOLE_DMG}}', creature.firstMeleeAttackDmg(AsSole=True))
+        if returnText.find('{{CALC_MELEE_DMG_BASE}}') != -1 :
+            returnText = returnText.replace('{{CALC_MELEE_DMG_BASE}}', creature.firstMeleeAttackDmg(baseOnly=True))
         if returnText.find('{{CALC_MELEE_DMG}}') != -1 :
             returnText = returnText.replace('{{CALC_MELEE_DMG}}', creature.firstMeleeAttackDmg())
         if returnText.find('{{CALC_CON_DC}}') != -1:
@@ -341,6 +340,7 @@ class Creature(models.Model):
     armourAC = models.IntegerField(verbose_name='Armour Bonus', default=0)
     shieldAC = models.IntegerField(verbose_name='Shield AC Bonus', default=0)
     naturalAC = models.IntegerField(verbose_name='Natural AC Bonus', default=0)
+    deflectAC = models.IntegerField(verbose_name='Deflection AC Bonus', default=0)
     extraHPText = models.CharField(max_length=128, blank=True)
     extraACText = models.CharField(max_length=128, blank=True)
     extraWillText = models.CharField(max_length=128, blank=True)
