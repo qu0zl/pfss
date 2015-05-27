@@ -135,7 +135,7 @@ class creatureInstance(object):
         return None
     @property
     def CMBValue(self):
-        if (self.base.Size.ACbonus>=2) or self.base.Feats.filter(name='Agile Maneuvers').count(): # Tiny or smaller
+        if (self.base.Size.ACbonus>=2) or self.base.Feats.filter(name='Agile Maneuvers').count() or self.base.Type.name.find('incorporeal') != -1:
             statMod = self.DexMod
         else:
             statMod = self.StrMod
@@ -148,7 +148,13 @@ class creatureInstance(object):
         return formatNumber(self.CMBValue)
     @property
     def CMD(self):
-        return int(10+self.BAB+self.StrMod+self.DexMod+self.dodgeAC-self.base.Size.ACbonus)
+
+        if self.base.Type.name.find('incorporeal') != -1:
+            statMod = self.DexMod + self.DexMod if self.DexMod > self.StrMod else self.StrMod
+        else:
+            statMod = self.DexMod + self.StrMod
+
+        return int(10+self.BAB+statMod+self.dodgeAC-self.base.Size.ACbonus)
     @property
     def CMBText(self):
         return self.base.CMBTextRender(self.CMBValue)
@@ -201,7 +207,7 @@ class creatureInstance(object):
     @property
     def meleeBonus(self):
         mod = self.StrMod
-        if self.base.Feats.filter(name='Weapon Finesse').count():
+        if self.base.Feats.filter(name='Weapon Finesse').count() or self.base.Type.name.find('incorporeal') != -1:
             if self.DexMod > mod:
                 mod = self.DexMod
         return self.BAB+mod+self.base.Size.ACbonus

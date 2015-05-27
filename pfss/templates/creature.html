@@ -52,7 +52,7 @@
 
 <div id='statistics'>
   <h3>Statistics</h3>
-  <div><b>Str</b> {{creature.Str}}, <b>Dex</b> {{creature.Dex}}, <b>Con</b> {{creature.Con}}, <b>Int</b> {% if creature.Int == 0 %}-{% else %}{{creature.Int}}{%endif%}, <b>Wis</b> {{creature.Wis}}, <b>Cha</b> {{creature.Cha}}</div>
+  <div><b>Str</b> {%if creature.Str == 0 %}-{%else%}{{creature.Str}}{%endif%}, <b>Dex</b> {{creature.Dex}}, <b>Con</b> {{creature.Con}}, <b>Int</b> {% if creature.Int == 0 %}-{% else %}{{creature.Int}}{%endif%}, <b>Wis</b> {{creature.Wis}}, <b>Cha</b> {{creature.Cha}}</div>
   <div><b>Base Atk</b> {{creature.BABtext}}, <b>CMB</b> {{creature.CMB}}{{creature.CMBText}}, <b>CMD</b> {{creature.CMD}}{{creature.CMDText}}</div>
   {% if creature.base.Feats.count %}
   <div><b>Feats </b>{% for feat in creature.base.Feats.all %}{% if not forloop.first %}, {% endif %}{{feat}}{% endfor %}</div>
