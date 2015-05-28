@@ -234,6 +234,7 @@ class Attack(models.Model):
     RANGED_STR_OPTIONS = ( (NO_STR, "Don't add Str"), (ADD_STR, "Add Str"), (NEG_STR_ONLY, "Add Str if negative") )
 
     name = models.CharField(max_length=64)
+    baseName = models.CharField(max_length=64, blank=True)
     bonusToHit = models.IntegerField(default=0)
     bonusToDmg = models.IntegerField(default=0)
     crit = models.CharField(max_length=16, blank=True)

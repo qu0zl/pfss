@@ -217,7 +217,8 @@ class creatureInstance(object):
         return self.BAB+mod+self.base.Size.ACbonus
     def toHit(self,creatureAttack):
         item = creatureAttack.attack
-        weaponFocus = 1 if self.base.Feats.filter(name='Weapon Focus (%s)'%item.name).count() else 0
+        weaponFocus = 1 if (self.base.Feats.filter(name='Weapon Focus (%s)'%item.name).count() \
+                or (item.baseName and self.base.Feats.filter(name='Weapon Focus (%s)'%item.baseName).count())) else 0
         if item.name == 'Rock' and self.base.Special.filter(name__startswith='Rock Throwing (Ex)').count():
             weaponFocus += 1
         weaponFocus += item.bonusToHit
