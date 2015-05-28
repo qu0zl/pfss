@@ -18,10 +18,10 @@
   {% if creature.defenseShort %}<b>Defensive Abilities</b> {{ creature.defenseShort|safe}}{%endif%}
   {{creature.extraTypesDefences|safe}}
   {{creature.base.DefenseText|safe}}
-  {% if creature.SR %}<b>SR</b> {{creature.SR}}{% endif %}
   {% if creature.base.Type.Immune %}
   <b>Immune</b> {{creature.base.Type.Immune|safe}}
   {% endif %}
+  {% if creature.SR %}<b>SR</b> {{creature.SR}}{% endif %}
   {% if creature.base.Type.Weaknesses %}
   <b>Weaknesses</b> {{creature.base.Type.Weaknesses}}
   {% endif %}
