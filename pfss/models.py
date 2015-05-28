@@ -279,6 +279,7 @@ class SpecialAbility(models.Model):
         returnText = returnText.replace( '{{STR_1.5}}', str(int(creature.StrMod*1.5)) )
         returnText = returnText.replace( '{{STR_0.5}}', str(int(creature.StrMod*0.5)) )
         returnText = returnText.replace( '{{TO_HIT}}', str(creature.meleeBonus) )
+        returnText = returnText.replace( '{{RANGED_TO_HIT}}', formatNumber(creature.rangedBonus) )
         if returnText.find('{{CALC_MELEE_AS_SOLE_DMG}}') != -1 :
             returnText = returnText.replace('{{CALC_MELEE_AS_SOLE_DMG}}', creature.firstMeleeAttackDmg(AsSole=True))
         if returnText.find('{{CALC_MELEE_DMG_BASE}}') != -1 :
