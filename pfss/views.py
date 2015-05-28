@@ -188,13 +188,13 @@ class creatureInstance(object):
     def ACcomponents(self):
         if self.base.armourAC or self.DexMod or self.base.naturalAC or self.base.deflectAC or self.base.shieldAC or self.dodgeAC or self.base.Size.ACbonus or self.base.extraACText:
             return "(%s%s%s%s%s%s%s%s)" % ( \
-                ("%s Arm " % formatNumber(self.base.armourAC)) if self.base.armourAC else "", \
-                ("%s Shd " % formatNumber(self.base.shieldAC)) if self.base.shieldAC else "", \
-                ("%s deflection " % formatNumber(self.base.deflectAC)) if self.base.deflectAC else "", \
                 ("%s Dex " % formatNumber(self.DexMod)) if self.DexMod else "", \
-                ("%s Nat " % formatNumber(self.base.naturalAC)) if self.base.naturalAC else "", \
-                ("+1 Dge " if self.dodgeAC else ""), \
-                ("%s Sze " % formatNumber(self.base.Size.ACbonus)) if self.base.Size.ACbonus else "", \
+                ("+1 dodge " if self.dodgeAC else ""), \
+                ("%s armor " % formatNumber(self.base.armourAC)) if self.base.armourAC else "", \
+                ("%s shield " % formatNumber(self.base.shieldAC)) if self.base.shieldAC else "", \
+                ("%s deflection " % formatNumber(self.base.deflectAC)) if self.base.deflectAC else "", \
+                ("%s natural " % formatNumber(self.base.naturalAC)) if self.base.naturalAC else "", \
+                ("%s size " % formatNumber(self.base.Size.ACbonus)) if self.base.Size.ACbonus else "", \
                 self.base.extraACText if self.base.extraACText else ''
                 )
         else:
@@ -217,7 +217,9 @@ class creatureInstance(object):
         return self.BAB+mod+self.base.Size.ACbonus
     def toHit(self,creatureAttack):
         item = creatureAttack.attack
-        weaponFocus = 1 if self.base.Feats.filter(name__startswith='Weapon Focus (%s)'%item.name).count() else 0
+        weaponFocus = 1 if self.base.Feats.filter(name='Weapon Focus (%s)'%item.name).count() else 0
+        if item.name == 'Rock' and self.base.Special.filter(name__startswith='Rock Throwing (Ex)').count():
+            weaponFocus += 1
         weaponFocus += item.bonusToHit
         if item.attackType == pfss.models.MELEE:
             if (item.attackClass == pfss.models.SECONDARY or creatureAttack.makeSecondary) and (self.melee.count() > 1 or (self.melee.count()==1 and self.melee.get().count>1)): 
@@ -259,6 +261,8 @@ class creatureInstance(object):
         attack = item.attack
         if self.StrMod < 0:
             dmgMultiplier = 1
+        elif attack.name == 'Bite' and self.base.Special.filter(name='Powerful Bite (Ex)').count():
+            dmgMultiplier = 2
         elif AsSole or item.wield2Handed:
             dmgMultiplier = 1.5
         elif attack.attackClass==pfss.models.TWO_HANDED or ((self.meleeByExclusive(item.exclusive).count()==1 and self.meleeByExclusive(item.exclusive).get().count==1) and (attack.attackClass==pfss.models.PRIMARY or attack.attackClass==pfss.models.SECONDARY)):
@@ -299,7 +303,10 @@ class creatureInstance(object):
         for item in self.ranged:
             attack = item.attack
             if attack.rangedStrOption == pfss.models.ADD_STR or (attack.rangedStrOption == pfss.models.NEG_STR_ONLY and self.StrMod < 0):
-                extraDmg = self.StrMod
+                if attack.name == 'Rock' and self.base.Special.filter(name__startswith='Rock Throwing (Ex)').count():
+                    extraDmg = int(self.StrMod * 1.5)
+                else:
+                    extraDmg = self.StrMod
             else:
                 extraDmg = 0
             extraDmg += attack.bonusToDmg
