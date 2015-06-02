@@ -1,5 +1,5 @@
-from pfss.models import CreatureGroup
+from pfss.models import Grouping
 
 def site_wide_context(request):
-    return { 'groups': CreatureGroup.objects.all() }
+    return { 'groupings': Grouping.objects.all() }
 

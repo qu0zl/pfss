@@ -80,6 +80,14 @@ def duplicateGroup(id):
     for item in group.groupentry_set.all():
         GroupEntry(Group=newGroup, creature=item.creature).save()
 
+class Grouping(models.Model):
+    class Meta:
+        ordering = ['priority', 'name']
+    name = models.CharField(max_length=128)
+    priority = models.IntegerField(default=0, blank=True, null=True)
+    def __unicode__(self):
+        return u"%s" % self.name
+
 class GroupEntry(models.Model):
     Group = models.ForeignKey('CreatureGroup')
     creature = models.ForeignKey('Creature')
@@ -89,12 +97,13 @@ class GroupEntry(models.Model):
 
 class CreatureGroup(models.Model):
     class Meta:
-        ordering = ['name']
+        ordering = ['Grouping', 'name']
     name = models.CharField(max_length=128)
     code = models.CharField(max_length=16, blank=True)
     AllowedExtraType = models.ManyToManyField('CreatureExtraType', blank=True, null=True)
     DefaultExtraType = models.ManyToManyField('CreatureExtraType', blank=True, null=True, related_name="DefaultCreatureExtraType_set")
     Augmented = models.BooleanField(default=False)
+    Grouping = models.ForeignKey('Grouping')
     def __unicode__(self):
         if self.Augmented or self.DefaultExtraType.all().count():
             text = u"%s (%s" % (self.name, ' Augmented' if self.Augmented else '')
@@ -251,6 +260,8 @@ class Attack(models.Model):
         return u"%s %s%s" % (self.name, self.dCount, self.dType)
 
 class SpecialAbility(models.Model):
+    class Meta:
+        ordering = ['name']
     name = models.CharField(max_length=128)
     short = models.CharField(max_length=128, blank=True)
     dynamicShortText = models.BooleanField(default=False)

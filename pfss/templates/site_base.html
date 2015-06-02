@@ -6,14 +6,16 @@
 {% block nav %}
     <ul class="nav navbar-nav">
         <li><a href="/pfs/list/">Creatures</a></li>
-        <li class="dropdown">
-            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Groups</a>
-                <ul class="dropdown-menu">
-                    {% for group in groups %}
-                    <li><a href="/pfs/list/{{group.id}}/">{{group}}</a></li>
-                    {% endfor %}
-                </ul>
-        </li>
+        {% for grouping in groupings %}
+            <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown">{{grouping.name}}</a>
+                    <ul class="dropdown-menu">
+                        {% for group in grouping.creaturegroup_set.all %}
+                        <li><a href="/pfs/list/{{group.id}}/">{{group}}</a></li>
+                        {% endfor %}
+                    </ul>
+            </li>
+        {% endfor %}
     </ul>
 {% endblock %}
 
