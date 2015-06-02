@@ -154,7 +154,8 @@ class creatureInstance(object):
         else:
             statMod = self.DexMod + self.StrMod
 
-        return int(10+self.BAB+statMod+self.dodgeAC-self.base.Size.ACbonus)
+        return int(10+self.BAB+statMod+self.dodgeAC-self.base.Size.ACbonus + \
+                (4 if self.base.Special.filter(name="Aura (unholy aura)").count() else 0))
     @property
     def CMBText(self):
         return self.base.CMBTextRender(self.CMBValue)
@@ -188,12 +189,12 @@ class creatureInstance(object):
     def ACcomponents(self):
         if self.base.armourAC or self.DexMod or self.base.naturalAC or self.base.deflectAC or self.base.shieldAC or self.dodgeAC or self.base.Size.ACbonus or self.base.extraACText:
             return "(%s%s%s%s%s%s%s%s)" % ( \
+                ("%s armor " % formatNumber(self.base.armourAC)) if self.base.armourAC else "", \
+                ("%s deflection " % formatNumber(self.base.deflectAC)) if self.base.deflectAC else "", \
                 ("%s Dex " % formatNumber(self.DexMod)) if self.DexMod else "", \
                 ("+1 dodge " if self.dodgeAC else ""), \
-                ("%s armor " % formatNumber(self.base.armourAC)) if self.base.armourAC else "", \
-                ("%s shield " % formatNumber(self.base.shieldAC)) if self.base.shieldAC else "", \
-                ("%s deflection " % formatNumber(self.base.deflectAC)) if self.base.deflectAC else "", \
                 ("%s natural " % formatNumber(self.base.naturalAC)) if self.base.naturalAC else "", \
+                ("%s shield " % formatNumber(self.base.shieldAC)) if self.base.shieldAC else "", \
                 ("%s size " % formatNumber(self.base.Size.ACbonus)) if self.base.Size.ACbonus else "", \
                 self.base.extraACText if self.base.extraACText else ''
                 )
@@ -333,6 +334,8 @@ class creatureInstance(object):
         miscMod = 0
         if self.base.Special.filter(name="Cat's Luck (Su)").count():
             miscMod = self.ChaMod if self.ChaMod > 0 else 0
+        if self.base.Special.filter(name="Aura (unholy aura)").count():
+            miscMod += 4
         return miscMod
     @property
     def Will(self):
