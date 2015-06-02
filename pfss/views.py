@@ -25,6 +25,21 @@ class creatureInstance(object):
         self.initExtraTypes(celestial, fiendish, entropic, resolute)
         self.initExtraTypesText()
         self.initSpecials(noSpecials=noSpecials)
+    @property
+    def typesString(self):
+        types = ['Augment Summons'] if self.augmented else []
+        types.extend(self.extraTypes)
+        if types.__len__():
+            first = True
+            text = " ("
+            for item in types:
+                text = "%s%s%s" % (text, ', ' if not first else '', item)
+                first = False
+            text += ') '
+        else:
+            return ''
+        return text
+
     def initExtraTypes(self, celestial, fiendish, entropic, resolute):
         self.extraTypes = []
         self.extraTypes.extend(self.base.ExtraType.all())

@@ -1,7 +1,7 @@
 <div class="render" style="border-style:solid; border-width:1px; padding-left:2px; padding-right:2px;">
 <div id='header'>
     <div>
-        <div class="IB"><b>{{creature.name}}</b></div>{% if creature.augmented %}<div class="IB right">(Augment Summons)</div>{% endif %}<div class ="IB right"><b>CR {{creature.CR}}</b></div>
+        <div class="IB"><b>{{creature.name}}</b></div><div class="IB right" style="padding-left:5px">{{creature.typesString}}</div><div class ="IB right"><b>CR {{creature.CR}}</b></div>
   </div>
   <div>{{creature.alignment}} {{creature.base.Size}} {{creature.base.Type}} {{creature.base.extraTypes}}</div>
   <div><b>Init</b> {{creature.initiativeText}}; <b>Senses</b> {{creature.base.Senses}}{%if creature.extraSensesText%} {{creature.extraSensesText}}{%endif%}; {{creature.perception}}</div>
