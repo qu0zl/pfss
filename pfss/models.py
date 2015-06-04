@@ -71,6 +71,7 @@ class Feat(models.Model):
 def duplicateGroup(id):
     group = CreatureGroup.objects.get(id=id)
     newGroup = CreatureGroup(name=('%s_duplicate'%group.name),Augmented=group.Augmented)
+    newGroup.Grouping = group.Grouping
     newGroup.save()
     for item in group.AllowedExtraType.all():
         newGroup.AllowedExtraType.add(item)
@@ -302,6 +303,8 @@ class SpecialAbility(models.Model):
             returnText = returnText.replace('{{CALC_CON_DC}}', str(10+(creature.HD/2)+creature.ConMod))
         if returnText.find('{{CALC_STR_DC}}') != -1:
             returnText = returnText.replace('{{CALC_STR_DC}}', str(10+(creature.HD/2)+creature.StrMod))
+        if returnText.find('{{CALC_CHA_DC}}') != -1:
+            returnText = returnText.replace('{{CALC_CHA_DC}}', str(10+(creature.HD/2)+creature.ChaMod))
         try:
             STR_MOD = int(returnText.split('{{STR_MOD_')[1].split('}')[0])
             STR_MOD += creature.StrMod
@@ -350,6 +353,7 @@ class Creature(models.Model):
     Type = models.ForeignKey('CreatureType', default=None, null=True)
     Special = models.ManyToManyField('SpecialAbility', default=None, blank=True, null=True)
     ExtraType = models.ManyToManyField('CreatureExtraType', default=None, blank=True, null=True)
+    SupportedExtraType = models.ManyToManyField('CreatureExtraType', default=None, blank=True, null=True, related_name="SupportedExtraType_set")
     HD = models.IntegerField(verbose_name='Hit-Dice', null=True) # Hit-dice
     armourAC = models.IntegerField(verbose_name='Armour Bonus', default=0)
     shieldAC = models.IntegerField(verbose_name='Shield AC Bonus', default=0)
