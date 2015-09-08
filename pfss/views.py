@@ -9,7 +9,7 @@ import pfss.models
 # augment summoning.
 # The created instance is then passed to a template for rendering.
 class creatureInstance(object):
-    def __init__(self, base, augment=False, celestial=False, fiendish=False, entropic=False, resolute=False, noSpecials=False):
+    def __init__(self, base, augment=False, celestial=False, fiendish=False, entropic=False, resolute=False, noSpecials=False, summongood=False):
         self.base = base
         self.augmented = augment
         for item in ("name","HD","Dex","Int","Wis","Cha","BAB","Speed","Size"):
@@ -22,12 +22,12 @@ class creatureInstance(object):
         self.BAB = base.BAB
         self.alignment = base.Alignment.short
 
-        self.initExtraTypes(celestial, fiendish, entropic, resolute)
+        self.initExtraTypes(celestial, fiendish, entropic, resolute, summongood)
         self.initExtraTypesText()
         self.initSpecials(noSpecials=noSpecials)
     @property
     def typesString(self):
-        types = ['Augment Summons'] if self.augmented else []
+        types = ['Augment'] if self.augmented else []
         types.extend(self.extraTypes)
         if types.__len__():
             first = True
@@ -40,12 +40,14 @@ class creatureInstance(object):
             return ''
         return text
 
-    def initExtraTypes(self, celestial, fiendish, entropic, resolute):
+    def initExtraTypes(self, celestial, fiendish, entropic, resolute, summonGood):
         self.extraTypes = []
         self.extraTypes.extend(self.base.ExtraType.all())
         def appendUnique(self, newType):
             if newType not in self.extraTypes:
                 self.extraTypes.append(newType)
+        if summonGood:
+            appendUnique(self, pfss.models.CreatureExtraType.objects.get(name='SummonGood'))
         if celestial:
             appendUnique(self, pfss.models.CreatureExtraType.objects.get(name='Celestial'))
         elif fiendish:
@@ -410,7 +412,7 @@ def creatureList(request, group_ID=None):
         #for creature in creatures:
         #    creatureList.append({'creature':creature, 'augmented':creature.groupentry_set.filter(Group_id=group_ID)[0].Augmented})
     else:
-        extraTypes = pfss.models.CreatureExtraType.objects.all()
+        extraTypes = pfss.models.CreatureExtraType.objects.exclude(name='SummonGood')
 
     return render_to_response('list.html', \
         {
@@ -467,7 +469,8 @@ def creatureView(request, cid):
     entropic = bool(request.GET.get('entropic'))
     resolute = bool(request.GET.get('resolute'))
     noSpecials = bool(request.GET.get('noSpecials'))
-    creature = creatureInstance(pfss.models.Creature.objects.get(id=cid), augment=augment, celestial=celestial, fiendish=fiendish, entropic=entropic, resolute=resolute, noSpecials=noSpecials)
+    summonGood = bool(request.GET.get('summonGood'))
+    creature = creatureInstance(pfss.models.Creature.objects.get(id=cid), augment=augment, celestial=celestial, fiendish=fiendish, entropic=entropic, resolute=resolute, summongood=summonGood, noSpecials=noSpecials)
 
     return render_to_response('creature_view.html', \
         {
