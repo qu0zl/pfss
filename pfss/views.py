@@ -192,7 +192,7 @@ class creatureInstance(object):
         return int(((self.base.HDtype.half)+self.ConMod)*self.HD)+self.toughness
     @property
     def AC(self):
-        return 10+self.DexMod+self.base.armourAC+self.base.Size.ACbonus+self.base.naturalAC+self.base.deflectAC+self.base.shieldAC+(1 if self.base.Feats.filter(name='Dodge').count() else 0)
+        return 10+self.DexMod+self.base.armourAC+self.base.Size.ACbonus+self.base.naturalAC+self.base.deflectAC+self.base.shieldAC+(1 if self.base.Feats.filter(name='Dodge').count() else 0)+(self.WisMod if self.base.Special.filter(name='Prescience (Su)').count() else 0)
     @property
     def touchAC(self):
         return 10+self.DexMod+self.base.Size.ACbonus+self.dodgeAC+self.base.deflectAC
@@ -342,7 +342,9 @@ class creatureInstance(object):
         return "(%s%s%s)" % (self.HD,self.base.HDtype, formatNumber((self.ConMod*self.HD)+self.toughness, noZero=True))
     @property
     def initiative(self):
-        return self.DexMod + 4 if self.base.Feats.filter(name='Improved Initiative').count() else self.DexMod
+        init = self.DexMod + 4 if self.base.Feats.filter(name='Improved Initiative').count() else self.DexMod
+        init += self.WisMod if self.base.Special.filter(name='Prescience (Su)').count() else 0
+        return init
     @property
     def initiativeText(self):
         return formatNumber(self.initiative)
@@ -359,7 +361,7 @@ class creatureInstance(object):
         return formatNumber(self.WisMod+self.base.baseWillSave+self.MiscMod)
     @property
     def Ref(self):
-        return formatNumber(self.DexMod+self.base.baseRefSave+self.MiscMod)
+        return formatNumber(self.DexMod+self.base.baseRefSave+self.MiscMod + (self.WisMod if self.base.Special.filter(name='Prescience (Su)').count() else 0))
     @property
     def Fort(self):
         return formatNumber(self.ConMod+self.base.baseFortSave+self.MiscMod)
