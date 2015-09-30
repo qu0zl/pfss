@@ -195,10 +195,10 @@ class creatureInstance(object):
         return 10+self.DexMod+self.base.armourAC+self.base.Size.ACbonus+self.base.naturalAC+self.base.deflectAC+self.base.shieldAC+(1 if self.base.Feats.filter(name='Dodge').count() else 0)+(self.WisMod if self.base.Special.filter(name='Prescience (Su)').count() else 0)
     @property
     def touchAC(self):
-        return 10+self.DexMod+self.base.Size.ACbonus+self.dodgeAC+self.base.deflectAC
+        return 10+self.DexMod+self.base.Size.ACbonus+self.dodgeAC+self.base.deflectAC+(self.WisMod if self.base.Special.filter(name='Prescience (Su)').count() else 0)
     @property
     def flatFootedAC(self):
-        return 10+self.base.Size.ACbonus+self.base.naturalAC+self.base.deflectAC+self.base.shieldAC+self.base.armourAC + (self.DexMod if self.DexMod<0 else 0)
+        return 10+self.base.Size.ACbonus+self.base.naturalAC+self.base.deflectAC+self.base.shieldAC+self.base.armourAC + (self.DexMod if self.DexMod<0 else 0) +(self.WisMod if self.base.Special.filter(name='Prescience (Su)').count() else 0)
     @property
     def dodgeAC(self):
         return (1 if self.base.Feats.filter(name='Dodge').count() else 0)
