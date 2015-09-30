@@ -290,7 +290,12 @@ class creatureInstance(object):
             dmgMultiplier = 0.5
         else:
             dmgMultiplier = 1
-        return (int(self.StrMod * dmgMultiplier)+attack.bonusToDmg)
+        weaponSpec = 2 if (self.base.Feats.filter(name='Weapon Specialization (%s)'%attack.name).count() \
+                or (attack.baseName and \
+                self.base.Feats.filter(name="Weapon Specialization (%s)" % attack.baseName).count())) \
+                else 0
+
+        return (int(self.StrMod * dmgMultiplier)+attack.bonusToDmg + weaponSpec)
     @property
     def meleeText(self):
         first = True
