@@ -241,7 +241,7 @@ class creatureInstance(object):
             weaponFocus += 1
         weaponFocus += item.bonusToHit
         if item.attackType == pfss.models.MELEE:
-            if (item.attackClass == pfss.models.SECONDARY or creatureAttack.makeSecondary) and (self.melee.count() > 1 or (self.melee.count()==1 and self.melee.get().count>1)): 
+            if (not creatureAttack.makePrimary and (item.attackClass == pfss.models.SECONDARY or creatureAttack.makeSecondary) and (self.melee.count() > 1 or (self.melee.count()==1 and self.melee.get().count>1))): 
                 if self.base.Feats.filter(name='Multiattack').count():
                     return formatNumber(self.meleeBonus-2+weaponFocus)
                 else:
@@ -286,7 +286,7 @@ class creatureInstance(object):
             dmgMultiplier = 1.5
         elif attack.attackClass==pfss.models.TWO_HANDED or ((self.meleeByExclusive(item.exclusive).count()==1 and self.meleeByExclusive(item.exclusive).get().count==1) and (attack.attackClass==pfss.models.PRIMARY or attack.attackClass==pfss.models.SECONDARY)):
             dmgMultiplier = 1.5
-        elif attack.attackClass == pfss.models.SECONDARY or item.makeSecondary:
+        elif (attack.attackClass == pfss.models.SECONDARY and not item.makePrimary) or item.makeSecondary:
             dmgMultiplier = 0.5
         else:
             dmgMultiplier = 1

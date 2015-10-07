@@ -189,6 +189,7 @@ class CreatureAttack(models.Model):
     noIterative = models.BooleanField(default=False)
     exclusive = models.BooleanField(default=False)
     makeSecondary = models.BooleanField(default=False)
+    makePrimary = models.BooleanField(default=False)
     wield2Handed = models.BooleanField(default=False)
     touchAttack = models.BooleanField(default=False)
     def __unicode__(self):
