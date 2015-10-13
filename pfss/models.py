@@ -313,6 +313,12 @@ class SpecialAbility(models.Model):
         except IndexError:
             pass
         try:
+            CHA_MOD = int(returnText.split('{{CHA_MOD_')[1].split('}')[0])
+            CHA_MOD += creature.ChaMod
+            returnText = re.sub('{{CHA_MOD_[0-9]*?}}', str(CHA_MOD), returnText)
+        except IndexError:
+            pass
+        try:
             CON_MOD = int(returnText.split('{{CON_MOD_')[1].split('}')[0])
             CON_MOD += creature.ConMod
             returnText = re.sub('{{CON_MOD_[0-9]*?}}', str(CON_MOD), returnText)
