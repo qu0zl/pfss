@@ -53,6 +53,7 @@
             <div class="IB"><input type="hidden" id="sliderColumns_value" name="columns" value="2"></div>
         </div>
         <div class="IB right">
+            <div class="IB left" style="font-weight:bold;">All:</div>
             {% for item in extraTypes %}
             <div class="IB left pad"><input type="checkbox" {% if item in defaultTypes %}checked{% endif %} id="{{item.short}}_all"><label for="{{item.short}}_all">{{item.name}}</label></input></div>
             {% endfor %}
