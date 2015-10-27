@@ -14,10 +14,16 @@
         $('#augment_all').click(function(){
             clicker('.cb_augment',$(this).prop('checked'));
         });
+        $('.cb_augment').click(function(){
+            $('#creature_'+$(this).data('which')).prop('checked',true);
+        });
 
         {% for item in extraTypes %}
         $('#{{item.short}}_all').click(function(){
             clicker('.cb_{{item.short}}',$(this).prop('checked'));
+        });
+        $('.cb_{{item.short}}').click(function(){
+            $('#creature_'+$(this).data('which')).prop('checked',true);
         });
         {% endfor %}
         $( "#slider" ).slider({ value:0.875, min:0.5, max:1.2, step: 0.005,
@@ -67,11 +73,11 @@
     <div class="IB right">
         {% for item in extraTypes %}
             {% if item in creature.SupportedExtraType.all %}
-            <div class="IB left pad"><input class="cb_{{item.short}}" type="checkbox" {% if item in defaultTypes %}checked{% endif %} name=modify_{{creature.id}}_{{item.short}} id=modify_{{creature.id}}_{{item.short}}><label for=modify_{{creature.id}}_{{item.short}}>{{item.name}}</label></input></div>
+            <div class="IB left pad"><input class="cb_{{item.short}}" type="checkbox" {% if item in defaultTypes %}checked{% endif %} name=modify_{{creature.id}}_{{item.short}} id=modify_{{creature.id}}_{{item.short}} data-which="{{creature.id}}"><label for=modify_{{creature.id}}_{{item.short}}>{{item.name}}</label></input></div>
             {% endif %}
         {% endfor %}
         <div class="IB right pad"><input class="c_check" type="checkbox" {% if group %} checked {% endif %} name=creature_{{creature.id}} id=creature_{{creature.id}}><label for=creature_{{creature.id}}>Include</label></input></div>
-        <div class="IB right pad"><input class="cb_augment" type="checkbox" {% if group and group.Augmented %}checked{% endif %} name=modify_{{creature.id}}_augment id=modify_{{creature.id}}_augment><label for=modify_{{creature.id}}_augment>Augment</label></input></div>
+        <div class="IB right pad"><input class="cb_augment" type="checkbox" {% if group and group.Augmented %}checked{% endif %} name=modify_{{creature.id}}_augment id=modify_{{creature.id}}_augment data-which="{{creature.id}}"><label for=modify_{{creature.id}}_augment>Augment</label></input></div>
         </div>
 </div>
 {% endfor %}
