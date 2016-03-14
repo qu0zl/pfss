@@ -2,7 +2,7 @@
 
 {% block head_title %}"Choose Creatures"{% endblock %}
 
-{% block body %}
+{% block extra_body %}
 <script>
     function clicker(className, value) {
         $(className).prop('checked',value);
@@ -42,6 +42,8 @@
         return true;
     };
 </script>
+{% endblock %}
+{% block body %}
 <form method="post" id="creature_list" action="/pfs/list/handle/" onsubmit="return toSubmit()"> {% csrf_token %}
 <div class="container-fluid">
     <div><button type="submit" style="display:block; white-space:nowrap">Generate</button></div>

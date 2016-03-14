@@ -3,6 +3,17 @@
 
 {% block head_title %}"{{creature.name}}"{% endblock %}
 
+{% block extra_body %}
+<script>
+    $( document ).ready( function() {
+        /*$('#include_all').click(function(){
+            clicker('.c_check',$(this).prop('checked'));
+        }); */
+        $('#layout').layout({'itemMargin':8});
+    });
+</script>
+{% endblock %}
+
 {% block body %}
 <STYLE type="text/css">
     .IB {display:inline-block;}
@@ -21,15 +32,6 @@
         .render {page-break-inside: avoid; background-color:white}
     }
 </STYLE>
-<script>
-    $( document ).ready( function() {
-        /*$('#include_all').click(function(){
-            clicker('.c_check',$(this).prop('checked'));
-        }); */
-        $('#layout').layout({'itemMargin':8});
-    });
-</script>
-
 <div id=layout>
 {% for creature in creatures %}
 {% include 'creature.html' with creature=creature %}
