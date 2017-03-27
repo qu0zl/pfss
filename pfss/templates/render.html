@@ -4,6 +4,8 @@
 {% block head_title %}"{{creature.name}}"{% endblock %}
 
 {% block extra_body %}
+<script src="{% static "js/brick-by-brick.min.js" %}"></script>
+
 <script>
     $( document ).ready( function() {
         /*$('#include_all').click(function(){
@@ -38,8 +40,3 @@
 {% endfor %}
 {% endblock %}
 </div>
-
-{% block extra_script %}
-<script src="{% static "js/brick-by-brick.min.js" %}"></script>
-{% endblock %}
-

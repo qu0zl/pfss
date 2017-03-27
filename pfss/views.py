@@ -1,5 +1,5 @@
 from django.contrib.auth.models import User
-from django.shortcuts import render_to_response, redirect, render
+from django.shortcuts import redirect, render
 from django.template import RequestContext
 from django.forms.models import modelformset_factory
 from pfss.models import formatNumber
@@ -421,14 +421,13 @@ def creatureList(request, group_ID=None):
     else:
         extraTypes = pfss.models.CreatureExtraType.objects.exclude(name='SummonGood')
 
-    return render_to_response('list.html', \
+    return render(request, 'list.html', \
         {
             'group':group,
             'creatures':creatures,
             'extraTypes':extraTypes,
             'defaultTypes':defaultTypes,
-        }, \
-        RequestContext(request))
+        })
 
 def handleList(request):
     creatures = []
@@ -460,13 +459,12 @@ def handleList(request):
                     args[argument] = 1
             creature=creatureInstance(pfss.models.Creature.objects.get(id=id), **args)
             creatures.append(creature)
-    return render_to_response('render.html', \
+    return render(request, 'render.html', \
             {
                 'creatures':creatures,
                 'font_size':font_size,
                 'width':width
-            }, \
-            RequestContext(request))
+            })
 
 def creatureView(request, cid):
 
@@ -479,9 +477,8 @@ def creatureView(request, cid):
     summonGood = bool(request.GET.get('summonGood'))
     creature = creatureInstance(pfss.models.Creature.objects.get(id=cid), augment=augment, celestial=celestial, fiendish=fiendish, entropic=entropic, resolute=resolute, summongood=summonGood, noSpecials=noSpecials)
 
-    return render_to_response('creature_view.html', \
+    return render(request, 'creature_view.html', \
         {
             'creature':creature,
-        }, \
-        RequestContext(request))
+        })
 
